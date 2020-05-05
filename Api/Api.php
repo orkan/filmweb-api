@@ -1,78 +1,70 @@
 <?php
 
-final class Api {
-	
-	private $keys;
-	private $data;
-	private $extra;
-	
-	private Transport $send;
+namespace Orkan\Filmweb\Api;
 
-	public function __construct(Transport $t) {
+use Orkan\Filmweb\Transport\Transport;
+
+class Api
+{
+	const URL = 'https://ssl.filmweb.pl/api';
+	const VER = '1.0';
+	const APP = 'android';
+	const KEY = 'qjcGhW2JnvGT9dfCt3uT_jozR3s';
+	private $send;
+
+	public function __construct(Transport $t)
+	{
 		$this->send = $t;
 	}
-	
-	public function method($method, $args = []) {
-		$m = new $method($args);
-		$this->send->with($m->getType(), $m->getUrl(), $m->getArgs());
 
-		
+	public function call(string $method, array $args = []) : array
+	{
+		$method = __NAMESPACE__ . '\\Method\\' . $method; // cant use the 'use' statement
+		$m = new $method;
+		$response = $this->send->with(
+			$m->type(),
+			self::URL,
+			self::query($m->prepare($args))
+		);
+
+		return $m->extract($this->validate($response));
 	}
-	
-	protected function getData($response) {
-		$a = explode("\n", $response);
 
-		if('ok' == $a[0])
-		{
-			/*
-			 * Znajdz dane w stringu opdpowiedzi. Format:
-			 * [tablica [zagniezdzona]] t:12345|s
-			 * ^^^^^^^ data ^^^^^^^^^^^^^^extra^^
-			 */
-			$i = strrpos($a[1], ']') + 1; // znajdz koniec tablicy
-			$data  = substr($a[1], 0, $i);
-			$extra = substr($a[1], $i);
-			
-			$raw = json_decode($data);
-			
-			array_combine($this->keys, )
-			
-			return json_decode($this->data);
-		}
-		else
-		{
-			throw new Exception('Filmweb API error: ' . $a[1]);
+	private function validate(string $response) : array
+	{
+		$r = explode("\n", $response);
+		$status = $r[0];
+		$output = $r[1];
+
+		if('err' == $status) {
+			trigger_error($output, E_USER_ERROR);
 		}
 
-		return $a;
-	}
-	
-	protected function mapKeys($arr) {
-		
-		
-		foreach($this->keys as $i => $key)
-			$data[$key] = $arr[$i];
+		$i = strrpos($output, ']');
+		if (false === $i || '[' !== $output[0]) {
+			trigger_error('No JSON data found', E_USER_ERROR);
+		}
 
-		return $data;
-	}
-	
-	public function execute(Transport $request) {
+		$data1 = substr($output, 0, $i);
+		$data2 = substr($output, $i);
 
+		$json = json_decode($data1);
+		if (null === $json) {
+			trigger_error('Decoding JSON data failed', E_USER_ERROR);
+		}
+
+		return ['json' => $json, 'extra' => $data2];
 	}
-	
-	private function signature($method) {
-		$met = $method . '\n'; // api wymaga \n na koncu
-		$ver = '1.0';
-		$app = 'android';
-		$key = 'qjcGhW2JnvGT9dfCt3uT_jozR3s';
-		$arr = [
+
+	private static function query(string $method) : string
+	{
+		$met = $method . '\n'; // required ?!
+		$out = [
 			'methods'   => $met,
-			'signature' => $ver . ',' . md5($met . $app . $key),
-			'version'   => $ver,
-			'appId'     => $app,
+			'signature' => self::VER . ',' . md5($met . self::APP . self::KEY),
+			'version'   => self::VER,
+			'appId'     => self::APP,
 		];
-		return $arr;
-		//return http_build_query($arr);
-		//return urldecode( http_build_query($arr) );
+		return http_build_query($out);
 	}
 }

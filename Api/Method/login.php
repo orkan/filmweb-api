@@ -1,21 +1,27 @@
 <?php
 
+namespace Orkan\Filmweb\Api\Method;
 
-final class login extends Method {
-	private $type = 'post';
-	private $args = ['username', 'password'];
-	private $prop;
-	//private $keys = ['username', 'avatar', 'name', 'userId', 'gender'];
-	
-	public function __construct(array $args) {
-		$this->prop = array_combine($this->args, $args);
+final class login extends Method
+{
+	// Transport: [get|post]
+	const TYPE = 'post';
+
+	// Query arguments order
+	const KEY = ['nickname' => 0, 'password' => 1];
+
+	// Response array keys order
+	const KEYS = [];
+
+	public function prepare(array $args): string
+	{
+		return sprintf($this . ' ["%s", "%s", 1]', $args[self::KEY['nickname']], $args[self::KEY['password']]);
 	}
-	
-	public function request() : string {
-		return sprintf('%s ["%s", "%s", 1]', $this, $this->prop['username'], $this->prop['password']);
-	}
-	
-	public function getResponse($response) : array {
-		return [];
+
+	public function extract(array $data): array
+	{
+		return [$data];
+		//$response = urldecode($response);
+		//return [$this . ': ' . __function__ . "($response)"] + array_values(self::KEYS);
 	}
 }
