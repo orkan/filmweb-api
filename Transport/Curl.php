@@ -2,6 +2,8 @@
 
 namespace Orkan\Filmweb\Transport;
 
+use Orkan\Filmweb\Logger;
+
 final class Curl extends Transport
 {
 	private $defaults = [
@@ -17,26 +19,27 @@ final class Curl extends Transport
 	{
 		$this->defaults[CURLOPT_COOKIEJAR]  = $args['cookie'];
 		$this->defaults[CURLOPT_COOKIEFILE] = $args['cookie'];
-//		echo "Curl: __construct({$args['cookie']})\n";
 	}
 
 	public function get(string $url, string $query) : string
 	{
-//		return "Curl: get($url$query)";
 		$options = [
 			CURLOPT_URL => $url . '?' . $query,
 		];
+
+		Logger::debug(var_export($options, true));
 		return $this->exec($options);
 	}
 
 	public function post(string $url, string $query) : string
 	{
-//		return "Curl: post($url$query)";
 		$options = [
 			CURLOPT_URL => $url,
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => urldecode($query),
 		];
+
+		Logger::debug(var_export($options, true));
 		return $this->exec($options);
 	}
 

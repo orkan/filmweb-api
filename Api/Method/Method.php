@@ -4,8 +4,7 @@ namespace Orkan\Filmweb\Api\Method;
 
 abstract class Method
 {
-	abstract protected function prepare(array $args) : string;
-	abstract protected function extract(array $data) : array;
+	abstract protected function format(array $args) : string;
 
 	public function type() : string
 	{

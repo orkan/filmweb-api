@@ -2,26 +2,32 @@
 
 namespace Orkan\Filmweb\Api\Method;
 
+use Orkan\Filmweb\Logger;
+
 final class isLoggedUser extends Method
 {
 	// Transport: [get|post]
 	const TYPE = 'get';
 
-	// Query arguments order
-	// const KEY = [];
+	// Query array keys:
+	// const KEY = 0;
 
-	// Response array keys order
-	const KEYS = ['nick', 'avatar', 'name', 'id', 'gender'];
+	// Response array keys:
+	const NICK   = 0;
+	const AVATAR = 1;
+	const NAME   = 2;
+	const ID     = 3;
+	const GENDER = 4;
+	const EXTRA1 = 5;
+	const EXTRA2 = 6;
+	const EXTRA3 = 7;
 
-	public function prepare(array $args): string
+	public function format(array $args): string
 	{
-		return $this;
-	}
+		$format = $this; // No args for this method. Only class name __toString()
 
-	public function extract(array $data): array
-	{
-		return [$data];
-		$data = urldecode($data);
-		return [$this . ': ' . __function__ . "($data)"] + array_values(self::KEYS);
+		Logger::info($format);
+
+		return $format;
 	}
 }
