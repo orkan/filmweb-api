@@ -1,22 +1,27 @@
 {
-	"name": "orkan/filmweb-api",
-	"type": "library",
-	"description": "Non-official API for Filmweb.pl",
-	"homepage": "https://github.com/orkans/filmweb-api",
-	"keywords": ["filmweb", "api", "movies"],
-	"license": "MIT",
-	"authors": [
-		{
-			"name": "Orkan",
-			"email": "orkans@gmail.com"
+	"name" : "orkan/filmweb-api",
+	"type" : "library",
+	"description" : "Non-official API for Filmweb.pl",
+	"homepage" : "https://github.com/orkans/filmweb-api",
+	"keywords" : [
+		"filmweb",
+		"api",
+		"movies"
+	],
+	"license" : "MIT",
+	"authors" : [{
+			"name" : "Orkan",
+			"email" : "orkans@gmail.com"
 		}
 	],
-	"require": {
-		"php": ">=7.2.0"
+	"require" : {
+		"php" : ">=7.2.0",
+		"monolog/monolog" : "^2.0"
 	},
-	"autoload": {
-		"psr-4": {
-			"Orkan\\Filmweb\\": ""
+	"autoload" : {
+		"psr-4" : {
+			"Orkan\\Filmweb\\" : ""
 		}
-	}
+	},
+	"minimum-stability" : "alpha"
 }
