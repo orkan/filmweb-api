@@ -8,24 +8,46 @@ use Orkan\Filmweb\Transport\Curl;
 
 class Filmweb
 {
-	const TITLE = '[Filmweb Api by Orkan]';
+	const TITLE = 'Filmweb Api by Orkan';
 	private $cfg;
 	private $log;
 	private $api;
 
-	public function __construct(string $login, string $pass, array $options = [])
+	public function __construct(string $login, string $pass, array $cfg = [])
 	{
-		set_error_handler(array($this, 'errorHandler'));
-		$this->cfg = $options;
+		$this->cfg = $cfg;
 
-		$logfile = empty($this->cfg['log_file']) ? 'filmweb.log' : $this->cfg['log_file'];
-		Logger::init($logfile);
+		// These must be set!
+		$this->defaults('cli_codepage' , 'cp852');
+		$this->defaults('cookie_file'  , dirname(__FILE__) . DIRECTORY_SEPARATOR . "{$login}-cookie.txt");
+		$this->defaults('log_channel'  , self::TITLE);
+		$this->defaults('log_file'     , self::TITLE . '.log');
+		$this->defaults('log_timezone' , 'UTC'); // 'UTC' @see https://www.php.net/manual/en/timezones.php
 
-		Logger::info(self::info()); // Introduce yourself :)
+		// Leave these for \Monolog defaults or define your own in $cfg
+		$this->defaults('log_keep'    , 0);	   // RotatingFileHandler->maxFiles
+		$this->defaults('log_datetime', null); // 'Y-m-d\TH:i:s.uP'
+		$this->defaults('log_format'  , null); // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+
+		// Api call limiter
+		$this->defaults('limit_call', 8); // Calls between pauses
+		$this->defaults('limit_usec', 500); // Pause duration in microseconds
+		
+		set_error_handler([$this, 'errorHandler']);
+
+		Logger::init($this->cfg);
+		Logger::info(self::title()); // Introduce itself! :)
 
 		$transport = new Curl(['cookie' => $this->cfg['cookie_file']]);
-		$this->api = new Api($transport);
+		$this->api = new Api($transport, $this->cfg);
 		$this->api->call('login', [login::NICKNAME => $login, login::PASSWORD => $pass]);
+	}
+
+	private function defaults(string $key, $value)
+	{
+		if (! isset($this->cfg[$key])) {
+			$this->cfg[$key] = $value;
+		}
 	}
 
 	public function getApi()
@@ -67,10 +89,11 @@ class Filmweb
 
 		$msg = "$msg $type: $errstr in $errfile on line $errline\n";
 
-		// Redirect output to STDERR if in CLI mode
-		if (php_sapi_name() == "cli") {
+		// If in CLI mode: redirect output to STDERR
+		if ('cli' == php_sapi_name()) {
 			fwrite(STDERR, iconv('utf-8', $this->cfg['cli_codepage'], $msg));
-		} else {
+		}
+		else {
 			echo $msg;
 		}
 
@@ -80,12 +103,20 @@ class Filmweb
 			exit(1); // A response code other than 0 is a failure
 		}
 
-		//return true; // Don't execute PHP internal error handler
+		// Don't execute PHP internal error handler
+		//return true;
 	}
 
-	public static function info()
+	public static function title() : string
 	{
 		$u = str_repeat('_', 33);
-		return $u . self::TITLE . $u;
+		return $u . '[' . self::TITLE . ']' . $u;
+	}
+
+	// The timestamp returned by filmweb is 3 digits too long?!? ... Cut it!
+	// Example: 1588365133974 -> 1588365133
+	public static function fixTimestamp(string $s) : string
+	{
+		return substr($s, 0, -3);
 	}
 }

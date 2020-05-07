@@ -16,18 +16,15 @@ final class isLoggedUser extends Method
 	const NICK   = 0;
 	const AVATAR = 1;
 	const NAME   = 2;
-	const ID     = 3;
+	const USERID = 3;
 	const GENDER = 4;
-	const EXTRA1 = 5;
-	const EXTRA2 = 6;
-	const EXTRA3 = 7;
 
 	public function format(array $args): string
 	{
-		$format = $this; // No args for this method. Only class name __toString()
+		$format = (string) $this; // No args for this method. Only class name __toString()
 
+		Logger::debug($format);
 		Logger::info($format);
-
 		return $format;
 	}
 }

@@ -7,18 +7,20 @@ use Orkan\Filmweb\Logger;
 final class Curl extends Transport
 {
 	private $defaults = [
-		CURLOPT_USERAGENT      => 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3',
-		CURLOPT_CONNECTTIMEOUT => 5,
-		CURLOPT_TIMEOUT        => 5,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_SSL_VERIFYPEER => false,
-		CURLOPT_SSL_VERIFYHOST => false,
+		CURLOPT_USERAGENT      => self::USERAGENT,
+		CURLOPT_CONNECTTIMEOUT => self::CONNECTTIMEOUT,
+		CURLOPT_TIMEOUT        => self::TIMEOUT,
+		CURLOPT_RETURNTRANSFER => self::RETURNTRANSFER,
+		CURLOPT_SSL_VERIFYPEER => self::SSL_VERIFYPEER,
+		CURLOPT_SSL_VERIFYHOST => self::SSL_VERIFYHOST,
 	];
 
 	public function __construct(array $args = [])
 	{
 		$this->defaults[CURLOPT_COOKIEJAR]  = $args['cookie'];
 		$this->defaults[CURLOPT_COOKIEFILE] = $args['cookie'];
+
+		Logger::debug(Logger::print_r($this->defaults));
 	}
 
 	public function get(string $url, string $query) : string
@@ -27,7 +29,7 @@ final class Curl extends Transport
 			CURLOPT_URL => $url . '?' . $query,
 		];
 
-		Logger::debug(var_export($options, true));
+		Logger::debug(Logger::print_r($options));
 		return $this->exec($options);
 	}
 
@@ -39,7 +41,7 @@ final class Curl extends Transport
 			CURLOPT_POSTFIELDS => urldecode($query),
 		];
 
-		Logger::debug(var_export($options, true));
+		Logger::debug(Logger::print_r($options));
 		return $this->exec($options);
 	}
 

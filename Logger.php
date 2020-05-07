@@ -2,13 +2,10 @@
 
 namespace Orkan\Filmweb;
 
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\StreamHandler;
-
 /**
  * A semi-singleton logging class
  * Usage:
- * Logger::init('file.log'); // Initialization required first!
+ * Logger::init($cfg); // Initialize logger first!
  * Logger::debug('some message'); // later in code...
  * @author Orkan
  *
@@ -20,21 +17,23 @@ class Logger
 	/**
 	 * Initialize logger with this file
 	 */
-	public static function init($file)
+	public static function init($cfg)
 	{
 		if (! self::$instance) {
 			// https://github.com/Seldaek/monolog/blob/master/doc/01-usage.md
-			$logger    = new \Monolog\Logger('filmweb'); // %channel%
-			$logline   = new LineFormatter('[%datetime%] %level_name%: %message%' . PHP_EOL, 'Y-m-d H:i:s'); // %context%
-			$logstream = new StreamHandler($file);
-			$logstream->setFormatter($logline);
-			$logger->pushHandler($logstream); // DEBUG = 100; - log everything, INFO  = 200; - log above >= 200
+			$logger    = new \Monolog\Logger($cfg['log_channel']); // %channel%
+			$logformat = new \Monolog\Formatter\LineFormatter($cfg['log_format'], defined('FILMWEB_DEBUG') ? null : $cfg['log_datetime']);
+			$logstream = new \Monolog\Handler\RotatingFileHandler($cfg['log_file'], $cfg['log_keep']);
+
+			$logstream->setFormatter($logformat);
+			$logger->pushHandler($logstream); // DEBUG = 100; log everything, INFO  = 200; log above >= 200
+			$logger->setTimezone(new \DateTimeZone($cfg['log_timezone']));
 
 			self::$instance = $logger;
 		}
 	}
 
-	// Example: [Orkan\Filmweb\Filmweb->__construct()] $message
+	// Outputs: [Orkan\Filmweb\Filmweb->__construct()] $message
 	private static function caller()
 	{
 		$level = 2; // caller history step back
@@ -47,7 +46,7 @@ class Logger
 
 	public static function debug($message)
 	{
-		if (! DEBUG) {
+		if (! defined('FILMWEB_DEBUG')) {
 			return;
 		}
 
@@ -72,5 +71,11 @@ class Logger
 	public static function info($message)
 	{
 		self::$instance->info($message);
+	}
+
+	public static function print_r(array $a)
+	{
+		$s = print_r($a, true);
+		return preg_replace('/[ ]{2,}/', '', $s); // Remove double spaces
 	}
 }

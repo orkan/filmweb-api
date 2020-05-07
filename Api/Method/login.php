@@ -19,9 +19,12 @@ final class login extends Method
 	public function format(array $args): string
 	{
 		$format = $this . ' ["%s", "%s", 1]'; // Args: login, password
+		
+		$r = sprintf($format, $args[self::NICKNAME], $args[self::PASSWORD]);
+		$l = sprintf($format, $args[self::NICKNAME], '---'); // Don't log passwords!
 
-		Logger::info(sprintf($format, $args[self::NICKNAME], '---')); // Don't log passwords
-
-		return sprintf($format, $args[self::NICKNAME], $args[self::PASSWORD]);
+		Logger::debug($l);
+		Logger::info($l);
+		return $r;
 	}
 }

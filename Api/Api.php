@@ -12,17 +12,26 @@ class Api
 	const APP = 'android';
 	const KEY = 'qjcGhW2JnvGT9dfCt3uT_jozR3s';
 
+	private $calls = 0; // Current call
+	private $limit_call;
+	private $limit_usec;
+
 	private $send;
 	private $status;
 	private $output;
 
-	public function __construct(Transport $t)
+	public function __construct(Transport $t, array $cfg)
 	{
 		$this->send = $t;
+		$this->limit_call = $cfg['limit_call'];
+		$this->limit_usec = $cfg['limit_usec'];
 	}
 
 	public function call(string $method, array $args = []) : string
 	{
+		// Slow down API calls overload
+		$this->limiter();
+
 		// Clear output buffers from previous method
 		$this->status = $this->output = null;
 
@@ -81,11 +90,6 @@ class Api
 		return $all;
 	}
 
-	public function status() : string
-	{
-		return $this->status;
-	}
-
 	private static function query(string $method) : string
 	{
 		$met = $method . '\n'; // required ?!
@@ -96,8 +100,21 @@ class Api
 			'appId'     => self::APP,
 		];
 
-		Logger::debug(var_export($out, true));
+		Logger::debug(Logger::print_r($out));
 
 		return http_build_query($out);
+	}
+
+	public function status() : string
+	{
+		return $this->status;
+	}
+
+	private function limiter() : void
+	{
+		if (0 == ++$this->calls % $this->limit_call) {
+			Logger::debug("[" . $this->calls . "] Slipping for " . $this->limit_usec . " microseconds...");
+			usleep($this->limit_usec);
+		}
 	}
 }
