@@ -6,7 +6,7 @@ abstract class Method
 {
 	abstract protected function format(array $args) : string;
 
-	public function type() : string
+	public function getType() : string
 	{
 		return static::TYPE;
 	}

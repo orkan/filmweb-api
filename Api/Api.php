@@ -17,6 +17,8 @@ class Api
 	private $limit_usec;
 
 	private $send;
+	private $request;
+	private $response;
 	private $status;
 	private $output;
 
@@ -30,23 +32,25 @@ class Api
 	public function call(string $method, array $args = []) : string
 	{
 		// Slow down API calls overload
-		$this->limiter();
+		$this->slowdown();
 
 		// Clear output buffers from previous method
-		$this->status = $this->output = null;
+		$this->status = $this->output = $this->request = $this->response = null;
 
 		$method = __NAMESPACE__ . '\\Method\\' . $method; // cant use the 'use' statement
 		$m = new $method;
 
-		$response = $this->send->with(
-			$m->type(),
+		$this->request  = $m->format($args);
+
+		$this->response = $this->send->with(
+			$m->getType(),
 			self::URL,
-			self::query( $m->format($args) )
+			self::getQuery( $this->request )
 		);
 
-		Logger::debug('Response: ' . $response);
+		Logger::debug('Response: ' . $this->response);
 
-		$r = explode("\n", $response);
+		$r = explode("\n", $this->response);
 		$this->status = isset($r[0]) ? $r[0] : 'null'; // ok|err
 		$this->output = $r[1];
 
@@ -56,14 +60,14 @@ class Api
 			trigger_error($this->output, E_USER_ERROR);
 		}
 
-		return $this->status();
+		return $this->getStatus();
 	}
 
-	public function data(string $key = 'all') : array
+	public function getData(string $key = 'all') : array
 	{
 		$i = strrpos($this->output, ']');
 		if (false === $i || '[' !== $this->output[0]) {
-			trigger_error('No JSON data found', E_USER_ERROR);
+			trigger_error('No JSON getData found', E_USER_ERROR);
 		}
 
 		$i += 1;
@@ -75,12 +79,13 @@ class Api
 
 		$json = json_decode($data1);
 		if (null === $json) {
-			trigger_error('Decoding JSON data failed', E_USER_ERROR);
+			trigger_error('Decoding JSON getData failed', E_USER_ERROR);
 		}
 
 		$all = [
 			'json'  => $json,
 			'extra' => $data2,
+			'raw'   => $this->output,
 		];
 
 		if (array_key_exists($key, $all)) {
@@ -90,7 +95,7 @@ class Api
 		return $all;
 	}
 
-	private static function query(string $method) : string
+	private static function getQuery(string $method) : string
 	{
 		$met = $method . '\n'; // required ?!
 		$out = [
@@ -105,12 +110,22 @@ class Api
 		return http_build_query($out);
 	}
 
-	public function status() : string
+	public function getStatus() : string
 	{
 		return $this->status;
 	}
 
-	private function limiter() : void
+	public function getRequest() : string
+	{
+		return $this->request;
+	}
+
+	public function getResponse() : string
+	{
+		return $this->response;
+	}
+
+	private function slowdown() : void
 	{
 		if (0 == ++$this->calls % $this->limit_call) {
 			Logger::debug("[" . $this->calls . "] Slipping for " . $this->limit_usec . " microseconds...");

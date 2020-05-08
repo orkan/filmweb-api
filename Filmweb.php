@@ -18,32 +18,32 @@ class Filmweb
 		$this->cfg = $cfg;
 
 		// These must be set!
-		$this->defaults('cli_codepage' , 'cp852');
-		$this->defaults('cookie_file'  , dirname(__FILE__) . DIRECTORY_SEPARATOR . "{$login}-cookie.txt");
-		$this->defaults('log_channel'  , self::TITLE);
-		$this->defaults('log_file'     , self::TITLE . '.log');
-		$this->defaults('log_timezone' , 'UTC'); // 'UTC' @see https://www.php.net/manual/en/timezones.php
+		$this->setDefault('cli_codepage' , 'cp852');
+		$this->setDefault('cookie_file'  , dirname(__FILE__) . DIRECTORY_SEPARATOR . "{$login}-cookie.txt");
+		$this->setDefault('log_channel'  , self::TITLE);
+		$this->setDefault('log_file'     , self::TITLE . '.log');
+		$this->setDefault('log_timezone' , 'UTC'); // 'UTC' @see https://www.php.net/manual/en/timezones.php
 
-		// Leave these for \Monolog defaults or define your own in $cfg
-		$this->defaults('log_keep'    , 0);	   // RotatingFileHandler->maxFiles
-		$this->defaults('log_datetime', null); // 'Y-m-d\TH:i:s.uP'
-		$this->defaults('log_format'  , null); // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+		// Leave these for \Monolog to use setDefault or define your own in $cfg
+		$this->setDefault('log_keep'    , 0);	   // RotatingFileHandler->maxFiles
+		$this->setDefault('log_datetime', null); // 'Y-m-d\TH:i:s.uP'
+		$this->setDefault('log_format'  , null); // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
 
 		// Api call limiter
-		$this->defaults('limit_call', 8); // Calls between pauses
-		$this->defaults('limit_usec', 500); // Pause duration in microseconds
+		$this->setDefault('limit_call', 8); // Calls between pauses
+		$this->setDefault('limit_usec', 500); // Pause duration in microseconds
 		
-		set_error_handler([$this, 'errorHandler']);
+		set_error_handler([$this, 'errorHandler']); // Filmweb->errorHandler()
 
 		Logger::init($this->cfg);
-		Logger::info(self::title()); // Introduce itself! :)
+		Logger::info(self::getTitle()); // Introduce itself! :)
 
 		$transport = new Curl(['cookie' => $this->cfg['cookie_file']]);
 		$this->api = new Api($transport, $this->cfg);
 		$this->api->call('login', [login::NICKNAME => $login, login::PASSWORD => $pass]);
 	}
 
-	private function defaults(string $key, $value)
+	private function setDefault(string $key, $value)
 	{
 		if (! isset($this->cfg[$key])) {
 			$this->cfg[$key] = $value;
@@ -107,16 +107,27 @@ class Filmweb
 		//return true;
 	}
 
-	public static function title() : string
+	public static function getTitle() : string
 	{
 		$u = str_repeat('_', 33);
 		return $u . '[' . self::TITLE . ']' . $u;
 	}
 
+	// UTILS:
+	// @todo: Make separate class tor it
+	
 	// The timestamp returned by filmweb is 3 digits too long?!? ... Cut it!
 	// Example: 1588365133974 -> 1588365133
-	public static function fixTimestamp(string $s) : string
+	public static function getTimestamp(string $timestamp) : string
 	{
-		return substr($s, 0, -3);
+		$l = strlen(time());
+		return strlen($timestamp) > $l ? substr($timestamp, 0, $l) : $timestamp;
 	}
+	
+	public static function formatDate(string $timestamp, $format = DATE_RSS) : string
+	{
+		$t = self::getTimestamp($timestamp);
+		return (new \DateTime(null, (new \DateTimeZone('Europe/Berlin'))))->setTimestamp($t)->format($format);
+	}
+	
 }

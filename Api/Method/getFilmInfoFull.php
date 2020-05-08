@@ -42,15 +42,7 @@ final class getFilmInfoFull extends Method
 
 		Logger::debug($str);
 		Logger::info($str);
-		return $str;
-	}
 
-	public static function prepare(array &$json): void
-	{
-		// Copy TITLEPL to TITLE if empty
-		if (empty($json[self::TITLE])) {
-			$json[self::TITLE] = $json[self::TITLEPL];
-			Logger::debug('Copy TITLEPL to TITLE');
-		}
+		return $str;
 	}
 }
