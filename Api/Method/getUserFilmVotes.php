@@ -9,7 +9,7 @@ use Orkan\Filmweb\Logger;
  *
  * @author Orkan
  */
-final class login extends Method
+final class getUserFilmVotes extends Method
 {
 	/**
 	 * Send method
@@ -17,13 +17,23 @@ final class login extends Method
 	 * @see Orkan\Filmweb\Transport: get(), post()
 	 * @formatter:off
 	 */
-	const TYPE = 'post';
+	const TYPE = 'get';
 
 	/**
 	 * Query array keys
 	 */
-	const NICKNAME = 0;
-	const PASSWORD = 1;
+	const USERID = 0;
+
+	/**
+	 * Response array keys
+	 */
+	const UPDATED  = 0;
+	const FILMID   = 0;
+	const DATE     = 1;
+	const RATE     = 2;
+	const FAV      = 3;
+	const COMMENT  = 4;
+	const FILMTYPE = 5; // 0 - movie, 1 - series
 
 	/**
 	 * Format method string
@@ -34,13 +44,12 @@ final class login extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$format = $this . ' ["%s", "%s", 1]';
+		$format = $this . ' [%d, 1]';
 
-		$r = sprintf( $format, $args[self::NICKNAME], $args[self::PASSWORD] );
-		$l = sprintf( $format, $args[self::NICKNAME], '---' ); // Don't log passwords!
+		$str = sprintf( $format, $args[self::USERID] );
 
-		Logger::debug( $l );
-		Logger::info( $l );
-		return $r;
+		Logger::debug( $str );
+		Logger::info( $str );
+		return $str;
 	}
 }

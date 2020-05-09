@@ -1,42 +1,92 @@
 <?php
 
-class Curl implements Transport {
-	
-	private $defaults = [
-		CURLOPT_USERAGENT      => 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3',
-		CURLOPT_CONNECTTIMEOUT => 5,
-		CURLOPT_TIMEOUT        => 5,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_SSL_VERIFYPEER => false,
-		CURLOPT_SSL_VERIFYHOST => false,
-	];
-	
-	public function __construct($cookie = '') {
-		$this->defaults[CURLOPT_COOKIEJAR]  = $cookie;
-		$this->defaults[CURLOPT_COOKIEFILE] = $cookie;
-	}
-	
-	public function get($url, $args = []) {
-		$opt = [
-			CURLOPT_URL => $url . http_build_query($args),
-		];
-		return exec($opt);
+namespace Orkan\Filmweb\Transport;
+
+use Orkan\Filmweb\Logger;
+use Orkan\Filmweb\Utils;
+
+/**
+ * Curl http transport implementation
+ *
+ * @author Orkan
+ */
+final class Curl extends Transport
+{
+	private $defaults = array(
+	/* @formatter:off */
+		CURLOPT_USERAGENT      => self::USERAGENT,
+		CURLOPT_CONNECTTIMEOUT => self::CONNECTTIMEOUT,
+		CURLOPT_TIMEOUT        => self::TIMEOUT,
+		CURLOPT_RETURNTRANSFER => self::RETURNTRANSFER,
+		CURLOPT_SSL_VERIFYPEER => self::SSL_VERIFYPEER,
+		CURLOPT_SSL_VERIFYHOST => self::SSL_VERIFYHOST,
+	);
+	/* @formatter:on */
+
+	/**
+	 *
+	 * @param array $args
+	 */
+	public function __construct( array $args = [] )
+	{
+		/* @formatter:off */
+		$this->defaults[ CURLOPT_COOKIEJAR ]  = $args[ 'cookie' ];
+		$this->defaults[ CURLOPT_COOKIEFILE ] = $args[ 'cookie' ];
+		/* @formatter:on */
+
+		Logger::debug( Utils::print_r( $this->defaults ) );
 	}
 
-	public function post($url, $args = []) {
-		$opt = [
-			CURLOPT_URL => $url,
-			CURLOPT_POST => true,
-			CURLOPT_POSTFIELDS => urldecode( http_build_query($args) ),
-		];
-		return exec($opt);
+	/**
+	 * Do [get] http request
+	 *
+	 * {@inheritdoc}
+	 * @see \Orkan\Filmweb\Transport\Transport::get()
+	 */
+	public function get( string $url, string $query ): string
+	{
+		$options = array(
+		/* @formatter:off */
+			CURLOPT_URL => $url . '?' . $query,
+		);
+		/* @formatter:on */
+
+		Logger::debug( Utils::print_r( $options ) );
+		return $this->exec( $options );
 	}
-	
-	private function exec($opt) {
+
+	/**
+	 * Do [post] http request
+	 *
+	 * {@inheritdoc}
+	 * @see \Orkan\Filmweb\Transport\Transport::post()
+	 */
+	public function post( string $url, string $query ): string
+	{
+		$options = array(
+		/* @formatter:off */
+			CURLOPT_URL        => $url,
+			CURLOPT_POST       => true,
+			CURLOPT_POSTFIELDS => urldecode( $query ),
+		);
+		/* @formatter:on */
+
+		Logger::debug( Utils::print_r( $options ) );
+		return $this->exec( $options );
+	}
+
+	/**
+	 * Do http request
+	 *
+	 * @param array $options
+	 * @return string Response from the server
+	 */
+	private function exec( array $options ): string
+	{
 		$request = curl_init();
-		curl_setopt_array($request, $opt + $this->defaults);
-		$response = curl_exec($request);
-		curl_close($request);
+		curl_setopt_array( $request, $options + $this->defaults );
+		$response = curl_exec( $request );
+		curl_close( $request );
 		return $response;
 	}
 }

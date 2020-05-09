@@ -9,7 +9,7 @@ use Orkan\Filmweb\Logger;
  *
  * @author Orkan
  */
-final class login extends Method
+final class isLoggedUser extends Method
 {
 	/**
 	 * Send method
@@ -17,13 +17,16 @@ final class login extends Method
 	 * @see Orkan\Filmweb\Transport: get(), post()
 	 * @formatter:off
 	 */
-	const TYPE = 'post';
+	const TYPE = 'get';
 
 	/**
-	 * Query array keys
+	 * Response array keys
 	 */
-	const NICKNAME = 0;
-	const PASSWORD = 1;
+	const NICK   = 0;
+	const AVATAR = 1;
+	const NAME   = 2;
+	const USERID = 3;
+	const GENDER = 4;
 
 	/**
 	 * Format method string
@@ -34,13 +37,10 @@ final class login extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$format = $this . ' ["%s", "%s", 1]';
+		$format = (string) $this; // No args for this method. Only class name __toString()
 
-		$r = sprintf( $format, $args[self::NICKNAME], $args[self::PASSWORD] );
-		$l = sprintf( $format, $args[self::NICKNAME], '---' ); // Don't log passwords!
-
-		Logger::debug( $l );
-		Logger::info( $l );
-		return $r;
+		Logger::debug( $format );
+		Logger::info( $format );
+		return $format;
 	}
 }
