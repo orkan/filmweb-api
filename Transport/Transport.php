@@ -2,6 +2,12 @@
 
 namespace Orkan\Filmweb\Transport;
 
+/**
+ * A skeleton class (Interface) for transport method
+ *
+ * @author Orkan
+ *
+ */
 abstract class Transport
 {
 	protected const USERAGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
@@ -11,11 +17,34 @@ abstract class Transport
 	protected const SSL_VERIFYPEER = false;
 	protected const SSL_VERIFYHOST = false;
 
-	abstract protected function  get(string $url, string $query) : string;
-	abstract protected function post(string $url, string $query) : string;
+	/**
+	 * Do [get] http request
+	 *
+	 * @param string $url
+	 * @param string $query
+	 * @return string Response from the server
+	 */
+	abstract protected function get( string $url, string $query ): string;
 
-	public function with(string $send, string $url, string $query) : string
+	/**
+	 * Do [post] http request
+	 *
+	 * @param string $url
+	 * @param string $query
+	 * @return string Response from the server
+	 */
+	abstract protected function post( string $url, string $query ): string;
+
+	/**
+	 * Choose the right method to send http request
+	 *
+	 * @param string $send Method get|post
+	 * @param string $url
+	 * @param string $query
+	 * @return string Response from the server
+	 */
+	public function with( string $send, string $url, string $query ): string
 	{
-		return $this->$send($url, $query);
+		return $this->$send( $url, $query );
 	}
 }

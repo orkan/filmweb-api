@@ -4,27 +4,43 @@ namespace Orkan\Filmweb\Api\Method;
 
 use Orkan\Filmweb\Logger;
 
+/**
+ * Get Filmweb API method string
+ *
+ * @author Orkan
+ */
 final class login extends Method
 {
-	// Transport: [get|post]
+	/**
+	 * Send method
+	 *
+	 * @see Orkan\Filmweb\Transport: get(), post()
+	 * @formatter:off
+	 */
 	const TYPE = 'post';
 
-	// Query array keys:
+	/**
+	 * Query array keys
+	 */
 	const NICKNAME = 0;
 	const PASSWORD = 1;
 
-	// Response array keys:
-	//const KEY = 0;
-
-	public function format(array $args): string
+	/**
+	 * Format method string
+	 *
+	 * @formatter:on
+	 * {@inheritdoc}
+	 * @see \Orkan\Filmweb\Api\Method\Method::format()
+	 */
+	public function format( array $args ): string
 	{
-		$format = $this . ' ["%s", "%s", 1]'; // Args: login, password
-		
-		$r = sprintf($format, $args[self::NICKNAME], $args[self::PASSWORD]);
-		$l = sprintf($format, $args[self::NICKNAME], '---'); // Don't log passwords!
+		$format = $this . ' ["%s", "%s", 1]';
 
-		Logger::debug($l);
-		Logger::info($l);
+		$r = sprintf( $format, $args[self::NICKNAME], $args[self::PASSWORD] );
+		$l = sprintf( $format, $args[self::NICKNAME], '---' ); // Don't log passwords!
+
+		Logger::debug( $l );
+		Logger::info( $l );
 		return $r;
 	}
 }

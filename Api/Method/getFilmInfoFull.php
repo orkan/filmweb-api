@@ -4,15 +4,29 @@ namespace Orkan\Filmweb\Api\Method;
 
 use Orkan\Filmweb\Logger;
 
+/**
+ * Get Filmweb API method string
+ *
+ * @author Orkan
+ */
 final class getFilmInfoFull extends Method
 {
-	// Transport: [get|post]
+	/**
+	 * Send method
+	 *
+	 * @see Orkan\Filmweb\Transport: get(), post()
+	 * @formatter:off
+	 */
 	const TYPE = 'get';
 
-	// Query array keys:
+	/**
+	 * Query array keys
+	 */
 	const FILMID = 0;
 
-	// Response array keys:
+	/**
+	 * Response array keys
+	 */
 	const TITLEPL   = 0;
 	const TITLE     = 1;
 	const RATE      = 2;
@@ -34,9 +48,16 @@ final class getFilmInfoFull extends Method
 	const COUNTRY   = 18;
 	const DESC      = 19;
 
+	/**
+	 * Format method string
+	 *
+	 * @formatter:on
+	 * {@inheritdoc}
+	 * @see \Orkan\Filmweb\Api\Method\Method::format()
+	 */
 	public function format(array $args): string
 	{
-		$format = $this . ' [%d]'; // Args: filmid
+		$format = $this . ' [%d]';
 
 		$str = sprintf($format, $args[self::FILMID]);
 

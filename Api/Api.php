@@ -3,133 +3,231 @@
 namespace Orkan\Filmweb\Api;
 
 use Orkan\Filmweb\Logger;
+use Orkan\Filmweb\Utils;
 use Orkan\Filmweb\Transport\Transport;
 
+/**
+ * Communicate with Filmweb via the given Transport object
+ *
+ * @author Orkan
+ */
 class Api
 {
+	/**
+	 * Filmweb API constants
+	 */
 	const URL = 'https://ssl.filmweb.pl/api';
 	const VER = '1.0';
 	const APP = 'android';
 	const KEY = 'qjcGhW2JnvGT9dfCt3uT_jozR3s';
 
-	private $calls = 0; // Current call
+	/**
+	 * Slowdown() communication a bit
+	 */
+	private $calls = 0; // Current call #no
 	private $limit_call;
 	private $limit_usec;
 
+	/**
+	 * Transport obiect given by main Filmweb class
+	 *
+	 * @var Transport
+	 */
 	private $send;
+
+	/**
+	 * API method
+	 *
+	 * @var string
+	 */
 	private $request;
+
+	/**
+	 * Raw response from server
+	 *
+	 * @var string
+	 */
 	private $response;
+
+	/**
+	 * First line of response from server: ok|err
+	 *
+	 * @var string
+	 */
 	private $status;
+
+	/**
+	 * Second line of response from server
+	 * On success - encoded json object
+	 * On failure - exception string (exc Message...)
+	 * Note: There is a third line included in response with unknown meaning ATM i.e:
+	 * getFilmInfoFull: t:43200
+	 * getUserFilmVotes: s
+	 *
+	 * @var string
+	 */
 	private $output;
 
-	public function __construct(Transport $t, array $cfg)
+	public function __construct( Transport $t, array $cfg )
 	{
 		$this->send = $t;
 		$this->limit_call = $cfg['limit_call'];
 		$this->limit_usec = $cfg['limit_usec'];
 	}
 
-	public function call(string $method, array $args = []) : string
+	/**
+	 * A reusable, main method to invoke Filmweb API methods within one login
+	 *
+	 * @param string $method Filmweb API method name to call
+	 * @param array $args Filmweb API method arguments to send
+	 * @return string Status string extracted from servers responce @see $this->status
+	 */
+	public function call( string $method, array $args = [] ): string
 	{
+		$this->request = $this->response = $this->status = $this->output = null;
+
 		// Slow down API calls overload
 		$this->slowdown();
 
-		// Clear output buffers from previous method
-		$this->status = $this->output = $this->request = $this->response = null;
-
 		$method = __NAMESPACE__ . '\\Method\\' . $method; // cant use the 'use' statement
-		$m = new $method;
+		$m = new $method();
 
-		$this->request  = $m->format($args);
+		$this->request = $m->format( $args );
 
 		$this->response = $this->send->with(
+		/* @formatter:off */
 			$m->getType(),
 			self::URL,
 			self::getQuery( $this->request )
 		);
+		/* @formatter:on */
 
-		Logger::debug('Response: ' . $this->response);
+		Logger::debug( 'Response: ' . $this->response );
 
-		$r = explode("\n", $this->response);
-		$this->status = isset($r[0]) ? $r[0] : 'null'; // ok|err
+		$r = explode( "\n", $this->response );
+
+		$this->status = isset( $r[0] ) ? $r[0] : 'null'; // ok|err
 		$this->output = $r[1];
 
-		Logger::info("status [{$this->status}]");
+		Logger::info( "status [{$this->status}]" );
 
-		if (in_array($this->status, ['err', 'null'])) {
-			trigger_error($this->output, E_USER_ERROR);
+		// Stop execution on error!
+		if ( in_array( $this->status, ['err', 'null'] ) ) {
+			trigger_error( $this->output, E_USER_ERROR );
 		}
 
 		return $this->getStatus();
 	}
 
-	public function getData(string $key = 'all') : array
+	/**
+	 * Get data from request
+	 * raw - raw string from response
+	 * json - decoded JSON object
+	 * extra - the extra sufix from response
+	 * default - array with all above
+	 *
+	 * @param string $key json|extra|raw
+	 * @return mixed Requested data
+	 */
+	public function getData( string $key = 'all' )
 	{
-		$i = strrpos($this->output, ']');
-		if (false === $i || '[' !== $this->output[0]) {
-			trigger_error('No JSON getData found', E_USER_ERROR);
+		if ( 'raw' === $key ) {
+			return $this->output;
+		}
+
+		$i = strrpos( $this->output, ']' );
+		if ( false === $i || '[' !== $this->output[0] ) {
+			trigger_error( 'No JSON getData found', E_USER_ERROR );
 		}
 
 		$i += 1;
-		$data1 = substr($this->output, 0, $i);
-		$data2 = substr($this->output, $i);
+		$data1 = substr( $this->output, 0, $i );
+		$data2 = substr( $this->output, $i );
 
-		Logger::debug('json_decode: ' . $data1);
-		Logger::debug('extra: ' . $data2);
+		Logger::debug( 'json_decode: ' . $data1 );
+		Logger::debug( 'extra: ' . $data2 );
 
-		$json = json_decode($data1);
-		if (null === $json) {
-			trigger_error('Decoding JSON getData failed', E_USER_ERROR);
+		$json = json_decode( $data1 );
+		if ( null === $json ) {
+			trigger_error( 'Decoding JSON getData failed', E_USER_ERROR );
 		}
 
-		$all = [
+		$all = array(
+		/* @formatter:off */
 			'json'  => $json,
 			'extra' => $data2,
 			'raw'   => $this->output,
-		];
+		);
+		/* @formatter:on */
 
-		if (array_key_exists($key, $all)) {
+		if ( array_key_exists( $key, $all ) ) {
 			return $all[$key];
 		}
 
 		return $all;
 	}
 
-	private static function getQuery(string $method) : string
+	/**
+	 * Get query string in Filmweb API format
+	 *
+	 * @param string $method Filmweb API method
+	 * @return string
+	 */
+	private static function getQuery( string $method ): string
 	{
 		$met = $method . '\n'; // required ?!
-		$out = [
+		$out = array(
+		/* @formatter:off */
 			'methods'   => $met,
 			'signature' => self::VER . ',' . md5($met . self::APP . self::KEY),
 			'version'   => self::VER,
 			'appId'     => self::APP,
-		];
+		);
+		/* @formatter:on */
 
-		Logger::debug(Logger::print_r($out));
+		Logger::debug( Utils::print_r( $out ) );
 
-		return http_build_query($out);
+		return http_build_query( $out );
 	}
 
-	public function getStatus() : string
+	/**
+	 * Get first line of response from server: ok|err
+	 *
+	 * @return string
+	 */
+	public function getStatus(): string
 	{
 		return $this->status;
 	}
 
-	public function getRequest() : string
+	/**
+	 * Get last API method used
+	 *
+	 * @return string
+	 */
+	public function getRequest(): string
 	{
 		return $this->request;
 	}
 
-	public function getResponse() : string
+	/**
+	 * Get raw response from server
+	 *
+	 * @return string
+	 */
+	public function getResponse(): string
 	{
 		return $this->response;
 	}
 
-	private function slowdown() : void
+	/**
+	 * Sleep for [X] milisecconds between [Y] API calls
+	 */
+	private function slowdown(): void
 	{
-		if (0 == ++$this->calls % $this->limit_call) {
-			Logger::debug("[" . $this->calls . "] Slipping for " . $this->limit_usec . " microseconds...");
-			usleep($this->limit_usec);
+		if ( 0 == ++ $this->calls % $this->limit_call ) {
+			Logger::debug( "[" . $this->calls . "] Slipping for " . $this->limit_usec . " microseconds..." );
+			usleep( $this->limit_usec );
 		}
 	}
 }
