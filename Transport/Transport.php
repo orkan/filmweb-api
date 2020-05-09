@@ -6,7 +6,6 @@ namespace Orkan\Filmweb\Transport;
  * A skeleton class (Interface) for transport method
  *
  * @author Orkan
- *
  */
 abstract class Transport
 {

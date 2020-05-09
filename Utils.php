@@ -6,7 +6,6 @@ namespace Orkan\Filmweb;
  * Helper functions
  *
  * @author Orkan
- *
  */
 class Utils
 {
@@ -57,7 +56,7 @@ class Utils
 	 */
 	public static function print( string $message, $codepage = 'cp852' ): void
 	{
-		if ( 'cli' == php_sapi_name() ) {
+		if ( 'cli' === php_sapi_name() ) {
 			fwrite( STDERR, iconv( 'utf-8', $codepage, $message ) );
 		} else {
 			echo $message;

@@ -112,7 +112,7 @@ class Api
 		Logger::info( "status [{$this->status}]" );
 
 		// Stop execution on error!
-		if ( in_array( $this->status, ['err', 'null'] ) ) {
+		if ( in_array( $this->status, array( 'err', 'null' ) ) ) {
 			trigger_error( $this->output, E_USER_ERROR );
 		}
 
@@ -161,7 +161,7 @@ class Api
 		/* @formatter:on */
 
 		if ( array_key_exists( $key, $all ) ) {
-			return $all[$key];
+			return $all[ $key ];
 		}
 
 		return $all;
@@ -179,7 +179,7 @@ class Api
 		$out = array(
 		/* @formatter:off */
 			'methods'   => $met,
-			'signature' => self::VER . ',' . md5($met . self::APP . self::KEY),
+			'signature' => self::VER . ',' . md5( $met . self::APP . self::KEY ),
 			'version'   => self::VER,
 			'appId'     => self::APP,
 		);

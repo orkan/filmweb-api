@@ -7,6 +7,7 @@ use Orkan\Filmweb\Api\Method\login;
 use Orkan\Filmweb\Transport\Curl;
 
 /**
+ * Non-official API for Filmweb.pl
  *
  * @author Orkan
  */
@@ -29,7 +30,8 @@ class Filmweb
 	private $api;
 
 	/**
-	 * Login to Filmweb during object creation Set defaults for child objects here!
+	 * Initialize child objects: Transport & Api
+	 * Login to Filmweb
 	 *
 	 * @param string $login
 	 * @param string $pass
@@ -47,7 +49,7 @@ class Filmweb
 			'log_file'     => self::TITLE . '.log',
 			'log_timezone' => 'UTC', // 'UTC' @see https://www.php.net/manual/en/timezones.php
 
-			/* Leave these for \Monolog to use setDefault or define your own in $cfg */
+			/* Leave these for \Monolog defaults or define your own in $cfg */
 			'log_keep'     => 0,	// RotatingFileHandler->maxFiles
 			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
 			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
@@ -58,18 +60,19 @@ class Filmweb
 		), $cfg);
 		/* @formatter:on */
 
-		set_error_handler( [$this, 'errorHandler'] ); // Filmweb->errorHandler()
+		// @see $this->errorHandler()
+		set_error_handler( array( $this, 'errorHandler' ) );
 
 		Logger::init( $this->cfg );
 		Logger::info( self::getTitle() ); // Introduce itself! :)
 
-		$transport = new Curl( ['cookie' => $this->cfg['cookie_file']] );
+		$transport = new Curl( array( 'cookie' => $this->cfg['cookie_file'] ) );
 		$this->api = new Api( $transport, $this->cfg );
-		$this->api->call( 'login', [login::NICKNAME => $login, login::PASSWORD => $pass] );
+		$this->api->call( 'login', array( login::NICKNAME => $login, login::PASSWORD => $pass ) );
 	}
 
 	/**
-	 * Keep the Api instance for future use
+	 * Save Api instance for later
 	 *
 	 * @return \Orkan\Filmweb\Api\Api
 	 */
@@ -127,7 +130,7 @@ class Filmweb
 		Logger::$type( $msg );
 
 		// Quit on error!
-		if ( in_array( $type, array('error', 'warning') ) ) {
+		if ( in_array( $type, array( 'error', 'warning' ) ) ) {
 			exit( 1 );
 		}
 
@@ -138,9 +141,9 @@ class Filmweb
 	}
 
 	/**
-	 * Get title string for log file header entry
+	 * Create title string i.e for log entries
 	 *
-	 * @return string Formated library title
+	 * @return string Formated self::TITLE
 	 */
 	public static function getTitle(): string
 	{

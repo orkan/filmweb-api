@@ -9,7 +9,6 @@ namespace Orkan\Filmweb;
  * Logger::debug('some message'); // later in code...
  *
  * @author Orkan
- *
  */
 class Logger
 {
@@ -22,13 +21,13 @@ class Logger
 	{
 		if ( ! self::$instance ) {
 			// https://github.com/Seldaek/monolog/blob/master/doc/01-usage.md
-			$logger = new \Monolog\Logger( $cfg[ 'log_channel' ] ); // %channel%
-			$logformat = new \Monolog\Formatter\LineFormatter( $cfg[ 'log_format' ], defined( 'FILMWEB_DEBUG' ) ? null : $cfg[ 'log_datetime' ] );
-			$logstream = new \Monolog\Handler\RotatingFileHandler( $cfg[ 'log_file' ], $cfg[ 'log_keep' ] );
+			$logger = new \Monolog\Logger( $cfg['log_channel'] ); // %channel%
+			$logformat = new \Monolog\Formatter\LineFormatter( $cfg['log_format'], defined( 'FILMWEB_DEBUG' ) ? null : $cfg['log_datetime'] );
+			$logstream = new \Monolog\Handler\RotatingFileHandler( $cfg['log_file'], $cfg['log_keep'] );
 
 			$logstream->setFormatter( $logformat );
 			$logger->pushHandler( $logstream ); // DEBUG = 100; log everything, INFO = 200; log above >= 200
-			$logger->setTimezone( new \DateTimeZone( $cfg[ 'log_timezone' ] ) );
+			$logger->setTimezone( new \DateTimeZone( $cfg['log_timezone'] ) );
 
 			self::$instance = $logger;
 		}
