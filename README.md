@@ -12,31 +12,30 @@ Non-official API for Filmweb.pl
 ## Basic Usage
 ```php
 <?php
-
 use Orkan\Filmweb\Filmweb;
 use Orkan\Filmweb\Api\Method\isLoggedUser;
 
 // Login to Filmweb
-$filmweb = new Filmweb($login, $password);
+$filmweb = new Filmweb( $login, $password );
 $api = $filmweb->getApi();
 
 // Get user info
-$api->call('isLoggedUser');
-$user = $api->getData('json');
+$api->call( 'isLoggedUser' );
+$user = $api->getData( 'json' );
 $userId = $user[ isLoggedUser::USERID ];
 
 // Get list of voted films
-$api->call('getUserFilmVotes', [ $userId ]);
-$films = $api->getData('json');
+$api->call( 'getUserFilmVotes', array( $userId ) );
+$films = $api->getData( 'json' );
 
 // Get detailed info about the film id: 126180
-$api->call('getFilmInfoFull', [ 126180 ]);
-$film = $api->getData('json');
+$api->call( 'getFilmInfoFull', array( 126180 ) );
+$film = $api->getData( 'json' );
 
 // ...
 
-print_r($films);
-print_r($film);
+print_r( $films );
+print_r( $film );
 ```
 
 ## Third Party Packages
