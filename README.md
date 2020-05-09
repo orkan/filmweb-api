@@ -1,4 +1,4 @@
-![orkan/filmweb-api logo](https://user-images.githubusercontent.com/129182/81478316-bb757c80-921c-11ea-897b-aa92c179b0f1.jpg)
+![orkan/filmweb-api logo](https://user-images.githubusercontent.com/129182/81485047-bb8c7100-924a-11ea-9fca-8ee0191d7cad.jpg)
 
 # Filmweb.pl API
 Non-official API for Filmweb.pl
