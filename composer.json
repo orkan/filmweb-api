@@ -1,6 +1,5 @@
 {
 	"name" : "orkan/filmweb-api",
-	"type" : "library",
 	"description" : "Non-official API for Filmweb.pl",
 	"homepage" : "https://github.com/orkans/filmweb-api",
 	"keywords" : [
@@ -11,6 +10,7 @@
 	"license" : "MIT",
 	"authors" : [{
 			"name" : "Orkan",
+			"role" : "Developer",
 			"email" : "orkans@gmail.com"
 		}
 	],
