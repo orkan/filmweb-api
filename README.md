@@ -2,7 +2,7 @@
 Non-official API for Filmweb.pl
 
 * Highly configurable via an external configuration file
-* Includes [Monolog](https://github.com/Seldaek/monolog) for extended login
+* Includes [Monolog](https://github.com/Seldaek/monolog) for extended logging
 * Works in SAPI and CLI mode
 * Advanced PHP error handling
 
@@ -28,7 +28,7 @@ $userId = $user[ isLoggedUser::USERID ];
 $api->call( 'getUserFilmVotes', array( $userId ) );
 $films = $api->getData( 'json' );
 
-// Get detailed info about the film id: 126180
+// Get detailed info about movie ID:126180
 $api->call( 'getFilmInfoFull', array( 126180 ) );
 $film = $api->getData( 'json' );
 
@@ -43,10 +43,10 @@ print_r( $film );
 
 ## About
 ### Requirements
-works with PHP 7.2 or above
+This API library works with PHP 7.2 or above
 
 ### Author
-[Orkan](https://github.com/orkan) - *Initial work*
+Orkan - orkans@gmail.com - https://github.com/orkan
 
 ### License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
