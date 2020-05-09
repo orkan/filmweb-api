@@ -35,7 +35,7 @@ class Filmweb
 	 *
 	 * @param string $login
 	 * @param string $pass
-	 * @param array $cfg Overrides for $this->defaults
+	 * @param array $cfg Overrides for $this->cfg
 	 */
 	public function __construct( string $login, string $pass, array $cfg = [] )
 	{
@@ -50,7 +50,7 @@ class Filmweb
 			'log_timezone' => 'UTC', // 'UTC' @see https://www.php.net/manual/en/timezones.php
 
 			/* Leave these for \Monolog defaults or define your own in $cfg */
-			'log_keep'     => 0,	// RotatingFileHandler->maxFiles
+			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
 			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
 			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
 
