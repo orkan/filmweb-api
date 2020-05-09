@@ -29,7 +29,7 @@ class Api
 	private $limit_usec;
 
 	/**
-	 * Transport obiect given by main Filmweb class
+	 * The Transport obiect given by main Filmweb class
 	 *
 	 * @var Transport
 	 */
@@ -43,14 +43,14 @@ class Api
 	private $request;
 
 	/**
-	 * Raw response from server
+	 * Response from server
 	 *
 	 * @var string
 	 */
 	private $response;
 
 	/**
-	 * First line of response from server: ok|err
+	 * First line of response from server. Usualy: ok|err
 	 *
 	 * @var string
 	 */
@@ -60,7 +60,7 @@ class Api
 	 * Second line of response from server
 	 * On success - encoded json object
 	 * On failure - exception string (exc Message...)
-	 * Note: There is a third line included in response with unknown meaning ATM i.e:
+	 * Note: There is a third line included in response with unknown meaning ATM, like for:
 	 * getFilmInfoFull: t:43200
 	 * getUserFilmVotes: s
 	 *
@@ -76,17 +76,18 @@ class Api
 	}
 
 	/**
-	 * A reusable, main method to invoke Filmweb API methods within one login
+	 * A reusable main method, to help invoke multiple Filmweb API methods within one login
 	 *
-	 * @param string $method Filmweb API method name to call
-	 * @param array $args Filmweb API method arguments to send
+	 * @param string $method Filmweb API method
+	 * @param array $args Arguments to send
 	 * @return string Status string extracted from servers responce @see $this->status
 	 */
 	public function call( string $method, array $args = [] ): string
 	{
+		// Clear the last method call leftovers...
 		$this->request = $this->response = $this->status = $this->output = null;
 
-		// Slow down API calls overload
+		// Reduce the frequency of API calls
 		$this->slowdown();
 
 		$method = __NAMESPACE__ . '\\Method\\' . $method; // cant use the 'use' statement
@@ -98,7 +99,7 @@ class Api
 		/* @formatter:off */
 			$m->getType(),
 			self::URL,
-			self::getQuery( $this->request )
+			self::getQuery( $this->request ),
 		);
 		/* @formatter:on */
 
@@ -120,11 +121,11 @@ class Api
 	}
 
 	/**
-	 * Get data from request
-	 * raw - raw string from response
-	 * json - decoded JSON object
-	 * extra - the extra sufix from response
-	 * default - array with all above
+	 * Collect data from the query under following keys:
+	 * json - a JSON decoded object
+	 * extra - an additional suffix from the response
+	 * raw - raw string from the response
+	 * default - an array with all of the above
 	 *
 	 * @param string $key json|extra|raw
 	 * @return mixed Requested data
@@ -149,7 +150,7 @@ class Api
 
 		$json = json_decode( $data1 );
 		if ( null === $json ) {
-			trigger_error( 'Decoding JSON getData failed', E_USER_ERROR );
+			trigger_error( 'Decoding JSON object failed', E_USER_ERROR );
 		}
 
 		$all = array(
