@@ -5,8 +5,8 @@ Non-official API for Filmweb.pl
 
 * Highly configurable via an external configuration file
 * Includes [Monolog](https://github.com/Seldaek/monolog) for extended logging
-* Works in SAPI and CLI mode
 * Advanced PHP error handling
+* Works in CLI mode
 
 ## Installation
 `$ composer require orkan/filmweb-api`

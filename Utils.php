@@ -50,16 +50,32 @@ class Utils
 	}
 
 	/**
-	 * Print message to STDERR if in CLI mode
+	 * Print message to standard output or STDERR if in CLI mode
+	 * Notes:
+	 *     STDOUT and echo both seems to work in CLI
+	 *     STDERR is buffered and displays last
 	 *
-	 * @param string $msg
+	 * @param string $message
+	 * @param bool $is_error Choose the right I/O stream for outputing errors
+	 * @param string $codepage
 	 */
-	public static function print( string $message, $codepage = 'cp852' ): void
+	public static function print( string $message, bool $is_error = false, string $codepage = 'cp852' ): void
 	{
 		if ( 'cli' === php_sapi_name() ) {
-			fwrite( STDERR, iconv( 'utf-8', $codepage, $message ) );
+			fwrite( $is_error ? STDERR : STDOUT, iconv( 'utf-8', $codepage, $message ) );
 		} else {
 			echo $message;
 		}
+	}
+
+	/**
+	 * Print message to STDERR
+	 *
+	 * @param string $message
+	 * @param string $codepage
+	 */
+	public static function stderr( string $message, string $codepage = 'cp852' ): void
+	{
+		self::print($message, true, $codepage);
 	}
 }

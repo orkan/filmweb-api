@@ -99,7 +99,7 @@ class Api
 		/* @formatter:off */
 			$m->getType(),
 			self::URL,
-			self::getQuery( $this->request ),
+			self::getQuery( $this->request )
 		);
 		/* @formatter:on */
 
