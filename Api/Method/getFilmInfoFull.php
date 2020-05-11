@@ -2,8 +2,6 @@
 
 namespace Orkan\Filmweb\Api\Method;
 
-use Orkan\Filmweb\Logger;
-
 /**
  * Get Filmweb API method string
  *
@@ -55,15 +53,10 @@ final class getFilmInfoFull extends Method
 	 * {@inheritdoc}
 	 * @see \Orkan\Filmweb\Api\Method\Method::format()
 	 */
-	public function format(array $args): string
+	public function format( array $args ): string
 	{
-		$format = $this . ' [%d]';
+		$format = "$this [%u]";
 
-		$str = sprintf($format, $args[self::FILMID]);
-
-		Logger::debug($str);
-		Logger::info($str);
-
-		return $str;
+		return sprintf( $format, $args[self::FILMID] );
 	}
 }

@@ -87,6 +87,11 @@ final class Curl extends Transport
 		curl_setopt_array( $request, $options + $this->defaults );
 		$response = curl_exec( $request );
 		curl_close( $request );
+
+		if ( false === $response ) {
+			trigger_error( 'No response from server. Please check connection', E_USER_ERROR );
+		}
+
 		return $response;
 	}
 }

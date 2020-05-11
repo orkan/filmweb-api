@@ -35,7 +35,7 @@ class Filmweb
 	 *
 	 * @param string $login
 	 * @param string $pass
-	 * @param array $cfg Overrides for $this->defaults
+	 * @param array $cfg Overrides for $this->cfg
 	 */
 	public function __construct( string $login, string $pass, array $cfg = [] )
 	{
@@ -50,7 +50,7 @@ class Filmweb
 			'log_timezone' => 'UTC', // 'UTC' @see https://www.php.net/manual/en/timezones.php
 
 			/* Leave these for \Monolog defaults or define your own in $cfg */
-			'log_keep'     => 0,	// RotatingFileHandler->maxFiles
+			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
 			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
 			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
 
@@ -91,7 +91,7 @@ class Filmweb
 	 */
 	public function errorHandler( int $errno, string $errstr, string $errfile, int $errline ): bool
 	{
-		// Handle errors defined in error_reporting() only
+		// Do not handle errors excluded from error_reporting() with ~ sign
 		if ( ! (error_reporting() & $errno) ) {
 			return false;
 		}
@@ -121,16 +121,18 @@ class Filmweb
 				$msg .= " [$errno]";
 		}
 
+		$is_error = in_array( $type, array( 'error', 'warning' ) );
+
 		$msg = "$msg $type: $errstr in $errfile on line $errline\n";
 
 		// Print message to terminal in CLI mode, or echo it otherwise
-		Utils::print( $msg, $this->cfg['cli_codepage'] );
+		Utils::print($msg, $is_error, $this->cfg['cli_codepage'] );
 
 		// Call appropriate Logger method type
 		Logger::$type( $msg );
 
-		// Quit on error!
-		if ( in_array( $type, array( 'error', 'warning' ) ) ) {
+		// Quit on error! Tip: Default PHP exit code is -1
+		if ( $is_error ) {
 			exit( 1 );
 		}
 

@@ -2,8 +2,6 @@
 
 namespace Orkan\Filmweb\Api\Method;
 
-use Orkan\Filmweb\Logger;
-
 /**
  * Get Filmweb API method string
  *
@@ -34,13 +32,8 @@ final class login extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$format = $this . ' ["%s", "%s", 1]';
+		$format = "$this [\"%s\", \"%s\", 1]";
 
-		$r = sprintf( $format, $args[self::NICKNAME], $args[self::PASSWORD] );
-		$l = sprintf( $format, $args[self::NICKNAME], '---' ); // Don't log passwords!
-
-		Logger::debug( $l );
-		Logger::info( $l );
-		return $r;
+		return sprintf( $format, $args[self::NICKNAME], $args[self::PASSWORD] );
 	}
 }

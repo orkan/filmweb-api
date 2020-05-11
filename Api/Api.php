@@ -95,17 +95,24 @@ class Api
 
 		$this->request = $m->format( $args );
 
+		Logger::debug( $this->request );
+		Logger::info( $this->request );
+
 		$this->response = $this->send->with(
 		/* @formatter:off */
 			$m->getType(),
 			self::URL,
-			self::getQuery( $this->request ),
+			self::getQuery( $this->request )
 		);
 		/* @formatter:on */
 
 		Logger::debug( 'Response: ' . $this->response );
 
 		$r = explode( "\n", $this->response );
+
+		if ( count( $r ) < 2 ) {
+			trigger_error( 'Wrong response format', E_USER_ERROR );
+		}
 
 		$this->status = isset( $r[0] ) ? $r[0] : 'null'; // ok|err
 		$this->output = $r[1];
