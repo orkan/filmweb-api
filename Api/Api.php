@@ -110,6 +110,10 @@ class Api
 
 		$r = explode( "\n", $this->response );
 
+		if ( count( $r ) < 2 ) {
+			trigger_error( 'Wrong response format', E_USER_ERROR );
+		}
+
 		$this->status = isset( $r[0] ) ? $r[0] : 'null'; // ok|err
 		$this->output = $r[1];
 
