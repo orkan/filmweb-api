@@ -126,7 +126,7 @@ class Filmweb
 		$msg = "$msg $type: $errstr in $errfile on line $errline\n";
 
 		// Print message to terminal in CLI mode, or echo it otherwise
-		Utils::print($msg, $is_error, $this->cfg['cli_codepage'] );
+		Utils::print( $msg, $is_error, $this->cfg['cli_codepage'] );
 
 		// Call appropriate Logger method type
 		Logger::$type( $msg );
