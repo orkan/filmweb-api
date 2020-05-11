@@ -95,6 +95,9 @@ class Api
 
 		$this->request = $m->format( $args );
 
+		Logger::debug( $this->request );
+		Logger::info( $this->request );
+
 		$this->response = $this->send->with(
 		/* @formatter:off */
 			$m->getType(),

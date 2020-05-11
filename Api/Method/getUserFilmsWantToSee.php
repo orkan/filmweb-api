@@ -2,8 +2,6 @@
 
 namespace Orkan\Filmweb\Api\Method;
 
-use Orkan\Filmweb\Logger;
-
 /**
  * Get Filmweb API method string
  *
@@ -41,12 +39,8 @@ final class getUserFilmsWantToSee extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$format = $this . ' [%d, 1]';
+		$format = "$this [%u, 1]";
 
-		$str = sprintf( $format, $args[self::USERID] );
-
-		Logger::debug( $str );
-		Logger::info( $str );
-		return $str;
+		return sprintf( $format, $args[self::USERID] );
 	}
 }

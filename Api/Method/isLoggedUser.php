@@ -2,8 +2,6 @@
 
 namespace Orkan\Filmweb\Api\Method;
 
-use Orkan\Filmweb\Logger;
-
 /**
  * Get Filmweb API method string
  *
@@ -39,8 +37,6 @@ final class isLoggedUser extends Method
 	{
 		$format = (string) $this; // No args for this method. Only class name __toString()
 
-		Logger::debug( $format );
-		Logger::info( $format );
 		return $format;
 	}
 }
