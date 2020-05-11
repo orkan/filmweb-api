@@ -55,8 +55,6 @@ final class getFilmInfoFull extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$format = "$this [%u]";
-
-		return sprintf( $format, $args[self::FILMID] );
+		return sprintf( $this . ' [%u]', $args[self::FILMID] );
 	}
 }

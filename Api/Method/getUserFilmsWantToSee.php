@@ -27,7 +27,7 @@ final class getUserFilmsWantToSee extends Method
 	 */
 	const UPDATED = 0;
 	const FILMID  = 0;
-	const ADDED   = 1;
+	const DATE    = 1;
 	const LEVEL   = 2;
 
 	/**
@@ -39,8 +39,6 @@ final class getUserFilmsWantToSee extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$format = "$this [%u, 1]";
-
-		return sprintf( $format, $args[self::USERID] );
+		return sprintf( $this . ' [%u, 1]', $args[self::USERID] );
 	}
 }
