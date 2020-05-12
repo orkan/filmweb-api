@@ -1,12 +1,15 @@
-![orkan/filmweb-api logo](https://user-images.githubusercontent.com/129182/81485047-bb8c7100-924a-11ea-9fca-8ee0191d7cad.jpg)
+![repository-open-graph-template6d](https://user-images.githubusercontent.com/129182/81674511-9ddb2980-944d-11ea-9b5b-52ebef355ef7.jpg)
 
-# Filmweb.pl API
+# Filmweb.pl API 
 Non-official API for Filmweb.pl
+
+[![Latest Stable Version](https://img.shields.io/packagist/v/orkan/filmweb-api.svg?style=flat-square)](https://packagist.org/packages/orkan/filmweb-api)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg?style=flat-square)](https://php.net/)
 
 * Highly configurable via an external configuration file
 * Includes [Monolog](https://github.com/Seldaek/monolog) for extended logging
 * Advanced PHP error handling
-* Works in CLI mode
+* Supports PHP CLI mode
 
 ## Installation
 `$ composer require orkan/filmweb-api`
