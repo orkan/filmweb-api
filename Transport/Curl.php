@@ -98,12 +98,12 @@ final class Curl extends Transport
 
 		// Grab some statistics
 		// @see https://www.php.net/manual/en/function.curl-getinfo.php
-		$this->total_time += $info['total_time'];
+		$this->total_time += $info['total_time']; // float, in fractional seconds
 		$this->total_data_sent += $info['header_size'] + $info['request_size'];
-		$this->total_data_recived += $info['size_download'];
+		$this->total_data_recived += $info['size_download']; // @todo: Missing response headers size
 
 		if ( false === $response ) {
-			trigger_error( 'No response from server. Please check connection', E_USER_ERROR );
+			trigger_error( 'No response from server. Please check online connection', E_USER_ERROR );
 		}
 
 		return $response;
@@ -112,7 +112,7 @@ final class Curl extends Transport
 	/**
 	 * Get total request time
 	 *
-	 * @return float Total request time
+	 * @return float Total request time in fractional seconds
 	 */
 	public function getTotalTime(): float
 	{

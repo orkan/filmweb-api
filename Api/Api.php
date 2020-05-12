@@ -22,12 +22,10 @@ class Api
 	const KEY = 'qjcGhW2JnvGT9dfCt3uT_jozR3s';
 
 	/**
-	 * Slowdown() communication a bit
+	 * Slowdown() statistics
 	 */
-	private $calls = 0; // Current call #no
-	private $limit_call = 8;
-	private $limit_usec = 300;
-	private $limit_total = 0;
+	private $calls = 0; // Current call no.
+	private $limit_total = 0; // Total sleep time in microseconds
 
 	/**
 	 * The Transport obiect given by main Filmweb class
@@ -51,7 +49,7 @@ class Api
 	private $response;
 
 	/**
-	 * First line of response from server. Usualy: ok|err
+	 * First line of response from server, usualy: ok|err
 	 *
 	 * @var string
 	 */
@@ -69,11 +67,23 @@ class Api
 	 */
 	private $output;
 
+	/**
+	 * Options merged with defaults
+	 *
+	 * @var array[]
+	 */
+	private $cfg;
+
 	public function __construct( Transport $t, array $cfg )
 	{
+		$this->cfg = array_merge( array(
+			/* @formatter:off */
+			'limit_call' => 8, // usleep() after reaching this limit of call()'s
+			'limit_usec' => 300000, // In microseconds! 1s == 1 000 000 us
+		), $cfg);
+		/* @formatter:on */
+
 		$this->send = $t;
-		$this->limit_call = isset( $cfg['limit_call'] ) ? $cfg['limit_call'] : $this->limit_call;
-		$this->limit_usec = isset( $cfg['limit_usec'] ) ? $cfg['limit_usec'] : $this->limit_usec;
 	}
 
 	/**
@@ -230,31 +240,31 @@ class Api
 	}
 
 	/**
-	 * Sleep for [limit_usec] milisecconds between [limit_call] API calls
+	 * Sleep for [limit_usec] microseconds between each [limit_call] calls()
 	 */
 	private function slowdown(): void
 	{
-		if ( 0 == ++ $this->calls % $this->limit_call ) {
-			Logger::debug( "Current Api call #{$this->calls}. Slipping for {$this->limit_usec} microseconds..." );
-			usleep( $this->limit_usec );
-			$this->limit_total += $this->limit_usec;
+		if ( 0 == ++ $this->calls % $this->cfg['limit_call'] ) {
+			Logger::debug( "Current Api call #{$this->calls}. Sleeping for " . round( $this->cfg['limit_usec'] / 1000000, 3 ) . " seconds..." );
+			usleep( $this->cfg['limit_usec'] );
+			$this->limit_total += $this->cfg['limit_usec'];
 		}
 	}
 
 	/**
 	 * Get total sleep time between request call()'s
 	 *
-	 * @return float Total sleep time
+	 * @return float Total sleep time in fractional seconds
 	 */
 	public function getTotalSleep(): float
 	{
-		return $this->limit_total / 1000;
+		return $this->limit_total / 1000000;
 	}
 
 	/**
-	 * Get total connection time in miliseconds
+	 * Get total connection time
 	 *
-	 * @return float Total connection time
+	 * @return float Total connection time in fractional seconds
 	 */
 	public function getTotalTime(): float
 	{

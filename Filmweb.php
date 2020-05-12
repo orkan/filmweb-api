@@ -32,7 +32,7 @@ class Filmweb
 	/**
 	 * Instance spawn time
 	 *
-	 * @var float
+	 * @var float microtime() at spawning time
 	 */
 	private $start_time = null;
 
@@ -63,10 +63,6 @@ class Filmweb
 			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
 			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
 			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
-
-			/* Api call limiter */
-			'limit_call'   => 8,   // Calls between pauses
-			'limit_usec'   => 500, // Pause duration in microseconds
 		), $cfg);
 		/* @formatter:on */
 
@@ -164,9 +160,9 @@ class Filmweb
 	}
 
 	/**
-	 * Get execution time
+	 * Get time elapsed from spawning this instance
 	 *
-	 * @return float Microseconds passed since spawning this instance
+	 * @return float Elapsed time in fractional seconds
 	 */
 	public function getExecTime(): float
 	{

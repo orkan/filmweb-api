@@ -26,14 +26,15 @@ class Utils
 	/**
 	 * Format time
 	 *
-	 * @param bool $fractions Add fractions part
-	 * @return string Time in format 1h 48m 32.697s
+	 * @param float $seconds Time in fractional seconds
+	 * @param bool $fractions Add fractions part?
+	 * @return string Time in format, i.e. 18394d 16g 11m 41.589s (Unix Epoch start ;)
 	 */
-	public static function formatTime( float $microseconds, bool $fractions = true ): string
+	public static function formatTime( float $seconds, bool $fractions = true ): string
 	{
 		$d = $h = $m = 0;
-		$s = (int) $microseconds; // truncate fraction
-		$u = round( $microseconds - $s, 3 ); // truncate int and round
+		$s = (int) $seconds; // truncate fraction
+		$u = round( $seconds - $s, 3 ); // truncate int and round
 
 		if ( $s >= 86400 ) {
 			$d = floor( $s / 86400 );
@@ -52,8 +53,8 @@ class Utils
 	}
 
 	/**
-	 * If the timestamp returned by filmweb is 3 digits too long?!? ...
-	 * Cut it!
+	 * Last 3 digits in timestamp string returned by filmweb are fractions
+	 * Cut it off!
 	 *
 	 * @param string $timestamp I.e. 1588365133974
 	 * @return string I.e. 1588365133
