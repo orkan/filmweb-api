@@ -25,8 +25,9 @@ class Api
 	 * Slowdown() communication a bit
 	 */
 	private $calls = 0; // Current call #no
-	private $limit_call;
-	private $limit_usec;
+	private $limit_call = 8;
+	private $limit_usec = 300;
+	private $limit_total = 0;
 
 	/**
 	 * The Transport obiect given by main Filmweb class
@@ -71,8 +72,8 @@ class Api
 	public function __construct( Transport $t, array $cfg )
 	{
 		$this->send = $t;
-		$this->limit_call = $cfg['limit_call'];
-		$this->limit_usec = $cfg['limit_usec'];
+		$this->limit_call = isset( $cfg['limit_call'] ) ? $cfg['limit_call'] : $this->limit_call;
+		$this->limit_usec = isset( $cfg['limit_usec'] ) ? $cfg['limit_usec'] : $this->limit_usec;
 	}
 
 	/**
@@ -236,6 +237,47 @@ class Api
 		if ( 0 == ++ $this->calls % $this->limit_call ) {
 			Logger::debug( "[" . $this->calls . "] Slipping for " . $this->limit_usec . " microseconds..." );
 			usleep( $this->limit_usec );
+			$this->limit_total += $this->limit_usec;
 		}
+	}
+
+	/**
+	 * Get total sleep time between request call()'s
+	 *
+	 * @return float Total sleep time
+	 */
+	public function getTotalSleep(): float
+	{
+		return $this->limit_total / 1000;
+	}
+
+	/**
+	 * Get total connection time in miliseconds
+	 *
+	 * @return float Total connection time
+	 */
+	public function getTotalTime(): float
+	{
+		return $this->send->getTotalTime();
+	}
+
+	/**
+	 * Get total data sent
+	 *
+	 * @return int Total data sent in bytes
+	 */
+	public function getTotalDataSent(): int
+	{
+		return $this->send->getTotalDataSent();
+	}
+
+	/**
+	 * Get total data recived from server
+	 *
+	 * @return int Total data recived in bytes
+	 */
+	public function getTotalDataRecived(): int
+	{
+		return $this->send->getTotalDataRecived();
 	}
 }

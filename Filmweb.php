@@ -30,6 +30,13 @@ class Filmweb
 	private $api;
 
 	/**
+	 * Instance spawn time
+	 *
+	 * @var float
+	 */
+	private $start_time = null;
+
+	/**
 	 * Initialize child objects: Transport & Api
 	 * Login to Filmweb
 	 *
@@ -39,6 +46,9 @@ class Filmweb
 	 */
 	public function __construct( string $login, string $pass, array $cfg = [] )
 	{
+		// Save start execution time
+		$this->getExectime();
+
 		$this->cfg = array_merge( array(
 			/* @formatter:off */
 
@@ -126,7 +136,7 @@ class Filmweb
 		$msg = "$msg $type: $errstr in $errfile on line $errline\n";
 
 		// Print message to terminal in CLI mode, or echo it otherwise
-		Utils::print($msg, $is_error, $this->cfg['cli_codepage'] );
+		Utils::print( $msg, $is_error, $this->cfg['cli_codepage'] );
 
 		// Call appropriate Logger method type
 		Logger::$type( $msg );
@@ -151,5 +161,19 @@ class Filmweb
 	{
 		$u = str_repeat( '_', 33 );
 		return $u . '[' . self::TITLE . ']' . $u;
+	}
+
+	/**
+	 * Get execution time
+	 *
+	 * @return float Microseconds passed since spawning this instance
+	 */
+	public function getExecTime(): float
+	{
+		if ( null === $this->start_time ) {
+			$this->start_time = microtime( true );
+			return 0;
+		}
+		return microtime( true ) - $this->start_time;
 	}
 }

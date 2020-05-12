@@ -11,6 +11,47 @@ class Utils
 {
 
 	/**
+	 * Format byte size string
+	 * Examples: 361 bytes | 1016.1 kB | 14.62 Mb | 2.81 GB
+	 *
+	 * @param int $bytes Size in bytes
+	 * @return string Byte size string
+	 */
+	public static function formatBytes( int $bytes = 0 ): string
+	{
+		$sizes = array( 'bytes', 'kB', 'Mb', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' );
+		return $bytes ? (round( $bytes / pow( 1024, ($i = floor( log( $bytes, 1024 ) )) ), $i > 1 ? 2 : 1 ) . ' ' . $sizes[$i]) : '0 ' . $sizes[0];
+	}
+
+	/**
+	 * Format time
+	 *
+	 * @param bool $fractions Add fractions part
+	 * @return string Time in format 1h 48m 32.697s
+	 */
+	public static function formatTime( float $microseconds, bool $fractions = true ): string
+	{
+		$d = $h = $m = 0;
+		$s = (int) $microseconds; // truncate fraction
+		$u = round( $microseconds - $s, 3 ); // truncate int and round
+
+		if ( $s >= 86400 ) {
+			$d = floor( $s / 86400 );
+			$s = floor( $s % 86400 );
+		}
+		if ( $s >= 3600 ) {
+			$h = floor( $s / 3600 );
+			$s = floor( $s % 3600 );
+		}
+		if ( $s >= 60 ) {
+			$m = floor( $s / 60 );
+			$s = floor( $s % 60 );
+		}
+		$f = $fractions ? $u + $s : $s;
+		return ($d ? "{$d}d " : '') . ($h ? "{$h}g " : '') . ($m ? "{$m}m " : '') . ($f ? "{$f}s" : '');
+	}
+
+	/**
 	 * If the timestamp returned by filmweb is 3 digits too long?!? ...
 	 * Cut it!
 	 *
@@ -52,8 +93,8 @@ class Utils
 	/**
 	 * Print message to standard output or STDERR if in CLI mode
 	 * Notes:
-	 *     STDOUT and echo both seems to work in CLI
-	 *     STDERR is buffered and displays last
+	 * STDOUT and echo both seems to work in CLI
+	 * STDERR is buffered and displays last
 	 *
 	 * @param string $message
 	 * @param bool $is_error Choose the right I/O stream for outputing errors
@@ -76,6 +117,6 @@ class Utils
 	 */
 	public static function stderr( string $message, string $codepage = 'cp852' ): void
 	{
-		self::print($message, true, $codepage);
+		self::print( $message, true, $codepage );
 	}
 }
