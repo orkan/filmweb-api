@@ -179,7 +179,7 @@ class Api
 	 * Get query string in Filmweb API format
 	 *
 	 * @param string $method Filmweb API method
-	 * @return string
+	 * @return string Query string
 	 */
 	private static function getQuery( string $method ): string
 	{
@@ -201,7 +201,7 @@ class Api
 	/**
 	 * Get first line of response from server: ok|err
 	 *
-	 * @return string
+	 * @return string Status string
 	 */
 	public function getStatus(): string
 	{
@@ -211,7 +211,7 @@ class Api
 	/**
 	 * Get last API method used
 	 *
-	 * @return string
+	 * @return string API method
 	 */
 	public function getRequest(): string
 	{
@@ -221,7 +221,7 @@ class Api
 	/**
 	 * Get raw response from server
 	 *
-	 * @return string
+	 * @return string Raw response
 	 */
 	public function getResponse(): string
 	{
