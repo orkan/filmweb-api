@@ -229,12 +229,12 @@ class Api
 	}
 
 	/**
-	 * Sleep for [X] milisecconds between [Y] API calls
+	 * Sleep for [limit_usec] milisecconds between [limit_call] API calls
 	 */
 	private function slowdown(): void
 	{
 		if ( 0 == ++ $this->calls % $this->limit_call ) {
-			Logger::debug( "[" . $this->calls . "] Slipping for " . $this->limit_usec . " microseconds..." );
+			Logger::debug( "Current Api call #{$this->calls}. Slipping for {$this->limit_usec} microseconds..." );
 			usleep( $this->limit_usec );
 		}
 	}
