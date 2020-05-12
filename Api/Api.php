@@ -180,7 +180,7 @@ class Api
 	 * Get query string in Filmweb API format
 	 *
 	 * @param string $method Filmweb API method
-	 * @return string
+	 * @return string Query string
 	 */
 	private static function getQuery( string $method ): string
 	{
@@ -202,7 +202,7 @@ class Api
 	/**
 	 * Get first line of response from server: ok|err
 	 *
-	 * @return string
+	 * @return string Status string
 	 */
 	public function getStatus(): string
 	{
@@ -212,7 +212,7 @@ class Api
 	/**
 	 * Get last API method used
 	 *
-	 * @return string
+	 * @return string API method
 	 */
 	public function getRequest(): string
 	{
@@ -222,7 +222,7 @@ class Api
 	/**
 	 * Get raw response from server
 	 *
-	 * @return string
+	 * @return string Raw response
 	 */
 	public function getResponse(): string
 	{
@@ -230,12 +230,12 @@ class Api
 	}
 
 	/**
-	 * Sleep for [X] milisecconds between [Y] API calls
+	 * Sleep for [limit_usec] milisecconds between [limit_call] API calls
 	 */
 	private function slowdown(): void
 	{
 		if ( 0 == ++ $this->calls % $this->limit_call ) {
-			Logger::debug( "[" . $this->calls . "] Slipping for " . $this->limit_usec . " microseconds..." );
+			Logger::debug( "Current Api call #{$this->calls}. Slipping for {$this->limit_usec} microseconds..." );
 			usleep( $this->limit_usec );
 			$this->limit_total += $this->limit_usec;
 		}
