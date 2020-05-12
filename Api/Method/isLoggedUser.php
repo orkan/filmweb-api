@@ -35,8 +35,6 @@ final class isLoggedUser extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$format = (string) $this; // No args for this method. Only class name __toString()
-
-		return $format;
+		return $this; // No args for this method. Only class name __toString()
 	}
 }

@@ -46,4 +46,25 @@ abstract class Transport
 	{
 		return $this->$send( $url, $query );
 	}
+
+	/**
+	 * Get total request time
+	 *
+	 * @return float Total request time
+	 */
+	abstract protected function getTotalTime(): float;
+
+	/**
+	 * Get total data sent
+	 *
+	 * @return int Total data sent in bytes
+	 */
+	abstract protected function getTotalDataSent(): int;
+
+	/**
+	 * Get total data recived from server
+	 *
+	 * @return int Total data recived in bytes
+	 */
+	abstract protected function getTotalDataRecived(): int;
 }

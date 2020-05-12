@@ -1,6 +1,5 @@
 {
 	"name" : "orkan/filmweb-api",
-	"type" : "library",
 	"description" : "Non-official API for Filmweb.pl",
 	"homepage" : "https://github.com/orkans/filmweb-api",
 	"keywords" : [
@@ -11,11 +10,12 @@
 	"license" : "MIT",
 	"authors" : [{
 			"name" : "Orkan",
+			"role" : "Lead",
 			"email" : "orkans@gmail.com"
 		}
 	],
 	"require" : {
-		"php" : ">=7.2.0",
+		"php" : "^7.2",
 		"monolog/monolog" : "^2.0"
 	},
 	"autoload" : {
@@ -23,5 +23,5 @@
 			"Orkan\\Filmweb\\" : ""
 		}
 	},
-	"minimum-stability" : "alpha"
+	"minimum-stability" : "stable"
 }

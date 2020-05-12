@@ -24,6 +24,13 @@ final class Curl extends Transport
 	/* @formatter:on */
 
 	/**
+	 * Statistics
+	 */
+	private $total_time = 0;
+	private $total_data_sent = 0;
+	private $total_data_recived = 0;
+
+	/**
 	 *
 	 * @param array $args
 	 */
@@ -86,12 +93,49 @@ final class Curl extends Transport
 		$request = curl_init();
 		curl_setopt_array( $request, $options + $this->defaults );
 		$response = curl_exec( $request );
+		$info = curl_getinfo( $request );
 		curl_close( $request );
+
+		// Grab some statistics
+		// @see https://www.php.net/manual/en/function.curl-getinfo.php
+		$this->total_time += $info['total_time'];
+		$this->total_data_sent += $info['header_size'] + $info['request_size'];
+		$this->total_data_recived += $info['size_download'];
 
 		if ( false === $response ) {
 			trigger_error( 'No response from server. Please check connection', E_USER_ERROR );
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Get total request time
+	 *
+	 * @return float Total request time
+	 */
+	public function getTotalTime(): float
+	{
+		return $this->total_time;
+	}
+
+	/**
+	 * Get total data sent
+	 *
+	 * @return int Total data sent in bytes
+	 */
+	public function getTotalDataSent(): int
+	{
+		return $this->total_data_sent;
+	}
+
+	/**
+	 * Get total data recived from server
+	 *
+	 * @return int Total data recived in bytes
+	 */
+	public function getTotalDataRecived(): int
+	{
+		return $this->total_data_recived;
 	}
 }

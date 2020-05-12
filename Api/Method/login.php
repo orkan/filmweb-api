@@ -32,8 +32,6 @@ final class login extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$format = "$this [\"%s\", \"%s\", 1]";
-
-		return sprintf( $format, $args[self::NICKNAME], $args[self::PASSWORD] );
+		return sprintf( $this . ' ["%s", "%s", 1]', $args[self::NICKNAME], $args[self::PASSWORD] );
 	}
 }
