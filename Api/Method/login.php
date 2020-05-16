@@ -7,7 +7,7 @@ namespace Orkan\Filmweb\Api\Method;
  *
  * @author Orkan
  */
-final class login extends Method
+class login extends Method
 {
 	/**
 	 * Send method
@@ -32,6 +32,6 @@ final class login extends Method
 	 */
 	public function format( array $args ): string
 	{
-		return sprintf( $this . ' ["%s", "%s", 1]', $args[self::NICKNAME], $args[self::PASSWORD] );
+		return sprintf( $this . ' ["%s", "%s", 1]', addslashes( $args[self::NICKNAME] ), addslashes( $args[self::PASSWORD] ) );
 	}
 }

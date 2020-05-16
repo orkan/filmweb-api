@@ -37,8 +37,8 @@ final class Curl extends Transport
 	public function __construct( array $args = [] )
 	{
 		/* @formatter:off */
-		$this->defaults[ CURLOPT_COOKIEJAR ]  = $args[ 'cookie' ];
-		$this->defaults[ CURLOPT_COOKIEFILE ] = $args[ 'cookie' ];
+		$this->defaults[ CURLOPT_COOKIEJAR ]  = $args[ 'cookie_file' ];
+		$this->defaults[ CURLOPT_COOKIEFILE ] = $args[ 'cookie_file' ];
 		/* @formatter:on */
 
 		Logger::debug( Utils::print_r( $this->defaults ) );

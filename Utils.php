@@ -19,8 +19,8 @@ class Utils
 	 */
 	public static function formatBytes( int $bytes = 0 ): string
 	{
-		$sizes = array( 'bytes', 'kB', 'Mb', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' );
-		return $bytes ? (round( $bytes / pow( 1024, ($i = floor( log( $bytes, 1024 ) )) ), $i > 1 ? 2 : 1 ) . ' ' . $sizes[$i]) : '0 ' . $sizes[0];
+		$sizes = array( 'bytes', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' );
+		return $bytes ? ( round( $bytes / pow( 1024, ( $i = floor( log( $bytes, 1024 ) ) ) ), $i > 1 ? 2 : 1 ) . ' ' . $sizes[$i] ) : '0 ' . $sizes[0];
 	}
 
 	/**
@@ -28,7 +28,7 @@ class Utils
 	 *
 	 * @param float $seconds Time in fractional seconds
 	 * @param bool $fractions Add fractions part?
-	 * @return string Time in format, i.e. 18394d 16g 11m 41.589s (Unix Epoch start ;)
+	 * @return string Time in format 18394d 16g 11m 41.589s
 	 */
 	public static function formatTime( float $seconds, bool $fractions = true ): string
 	{
@@ -49,7 +49,7 @@ class Utils
 			$s = floor( $s % 60 );
 		}
 		$f = $fractions ? $u + $s : $s;
-		return ($d ? "{$d}d " : '') . ($h ? "{$h}g " : '') . ($m ? "{$m}m " : '') . ($f ? "{$f}s" : '');
+		return trim( ( $d ? "{$d}d " : '' ) . ( $h ? "{$h}g " : '' ) . ( $m ? "{$m}m " : '' ) . ( $f ? "{$f}s" : '' ) );
 	}
 
 	/**
@@ -68,7 +68,7 @@ class Utils
 	/**
 	 * Format date acording to current time zone
 	 *
-	 * @param string $timestamp Must be string to allow over 32bit numbers (i.e. 1588365133974) returned by Filmweb
+	 * @param string $timestamp Must be string to allow over 32bit numbers (e.g. 1588365133974) returned by Filmweb
 	 * @param string $format Date format. Use constants i.e. DATE_COOKIE or string 'Y-m-d H:i:s.u e'
 	 * @param string $timezone
 	 * @return string Date string
@@ -76,7 +76,7 @@ class Utils
 	public static function formatDateTimeZone( string $timestamp, $format = DATE_RSS, $timezone = 'Europe/Berlin' ): string
 	{
 		$t = self::getTimestamp( $timestamp );
-		return (new \DateTime( null, (new \DateTimeZone( $timezone )) ))->setTimestamp( $t )->format( $format );
+		return ( new \DateTime( null, ( new \DateTimeZone( $timezone ) ) ) )->setTimestamp( $t )->format( $format );
 	}
 
 	/**

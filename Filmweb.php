@@ -54,7 +54,7 @@ class Filmweb
 
 			/* These must be set! */
 			'cli_codepage' => 'cp852',
-			'cookie_file'  => dirname(__FILE__) . DIRECTORY_SEPARATOR . "{$login}-cookie.txt",
+			'cookie_file'  => dirname( __FILE__ ) . DIRECTORY_SEPARATOR . "{$login}-cookie.txt",
 			'log_channel'  => self::TITLE,
 			'log_file'     => self::TITLE . '.log',
 			'log_timezone' => 'UTC', // 'UTC' @see https://www.php.net/manual/en/timezones.php
@@ -72,7 +72,7 @@ class Filmweb
 		Logger::init( $this->cfg );
 		Logger::info( self::getTitle() ); // Introduce itself! :)
 
-		$transport = new Curl( array( 'cookie' => $this->cfg['cookie_file'] ) );
+		$transport = new Curl( $this->cfg );
 		$this->api = new Api( $transport, $this->cfg );
 		$this->api->call( 'login', array( login::NICKNAME => $login, login::PASSWORD => $pass ) );
 	}
@@ -137,7 +137,7 @@ class Filmweb
 		// Call appropriate Logger method type
 		Logger::$type( $msg );
 
-		// Quit on error! Tip: Default PHP exit code is -1
+		// Quit on error! Tip: Default PHP exit code is 255
 		if ( $is_error ) {
 			exit( 1 );
 		}

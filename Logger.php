@@ -12,14 +12,14 @@ namespace Orkan\Filmweb;
  */
 class Logger
 {
-	private static $instance;
+	private static $instance = null;
 
 	/**
 	 * Initialize logger with this file
 	 */
 	public static function init( $cfg )
 	{
-		if ( ! self::$instance ) {
+		if ( null === self::$instance ) {
 			// https://github.com/Seldaek/monolog/blob/master/doc/01-usage.md
 			$logger = new \Monolog\Logger( $cfg['log_channel'] ); // %channel%
 			$logformat = new \Monolog\Formatter\LineFormatter( $cfg['log_format'], defined( 'FILMWEB_DEBUG' ) ? null : $cfg['log_datetime'] );
@@ -36,7 +36,7 @@ class Logger
 	/**
 	 * Get name of the last calling function (from outside of this class)
 	 *
-	 * @return string I.e. [Orkan\Filmweb\Filmweb->__construct()] $message
+	 * @return string In format [Orkan\Filmweb\Filmweb->__construct()] $message
 	 */
 	private static function caller()
 	{

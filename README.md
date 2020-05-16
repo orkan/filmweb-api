@@ -6,10 +6,10 @@ Non-official API for Filmweb.pl
 [![Latest Stable Version](https://img.shields.io/packagist/v/orkan/filmweb-api.svg?style=flat-square)](https://packagist.org/packages/orkan/filmweb-api)
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg?style=flat-square)](https://php.net/)
 
-* Highly configurable via an external configuration file
-* Includes [Monolog](https://github.com/Seldaek/monolog) for extended logging
-* Advanced PHP error handling
-* Supports PHP CLI mode
+* Configurable
+* CLI mode able
+* [Monolog](https://github.com/Seldaek/monolog) powerable
+* PHP Error handling able
 
 ## Installation
 `$ composer require orkan/filmweb-api`
@@ -33,14 +33,9 @@ $userId = $user[ isLoggedUser::USERID ];
 $api->call( 'getUserFilmVotes', array( $userId ) );
 $films = $api->getData( 'json' );
 
-// Get detailed info about movie ID:126180
-$api->call( 'getFilmInfoFull', array( 126180 ) );
-$film = $api->getData( 'json' );
-
 // ...
 
 print_r( $films );
-print_r( $film );
 ```
 
 ## Third Party Packages
