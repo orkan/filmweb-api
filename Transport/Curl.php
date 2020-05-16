@@ -2,8 +2,8 @@
 
 namespace Orkan\Filmweb\Transport;
 
-use Orkan\Filmweb\Logger;
 use Orkan\Filmweb\Utils;
+use Pimple\Container;
 
 /**
  * Curl http transport implementation
@@ -31,17 +31,32 @@ final class Curl extends Transport
 	private $total_data_recived = 0;
 
 	/**
+	 * Dependency Injection Container
+	 *
+	 * @var Container
+	 */
+	private $app;
+
+	/**
+	 * Options merged with defaults
+	 *
+	 * @var array[]
+	 */
+	private $cfg;
+
+	/**
 	 *
 	 * @param array $args
 	 */
-	public function __construct( array $args = [] )
+	public function __construct( Container $app, array $args = [] )
 	{
 		/* @formatter:off */
 		$this->defaults[ CURLOPT_COOKIEJAR ]  = $args[ 'cookie_file' ];
 		$this->defaults[ CURLOPT_COOKIEFILE ] = $args[ 'cookie_file' ];
 		/* @formatter:on */
 
-		Logger::debug( Utils::print_r( $this->defaults ) );
+		$this->app = $app;
+		$this->app['logger']->debug( Utils::print_r( $this->defaults ) );
 	}
 
 	/**
@@ -58,7 +73,7 @@ final class Curl extends Transport
 		);
 		/* @formatter:on */
 
-		Logger::debug( Utils::print_r( $options ) );
+		$this->app['logger']->debug( Utils::print_r( $options ) );
 		return $this->exec( $options );
 	}
 
@@ -78,7 +93,7 @@ final class Curl extends Transport
 		);
 		/* @formatter:on */
 
-		Logger::debug( Utils::print_r( $options ) );
+		$this->app['logger']->debug( Utils::print_r( $options ) );
 		return $this->exec( $options );
 	}
 

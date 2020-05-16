@@ -2,9 +2,8 @@
 
 namespace Orkan\Filmweb\Api;
 
-use Orkan\Filmweb\Logger;
 use Orkan\Filmweb\Utils;
-use Orkan\Filmweb\Transport\Transport;
+use Pimple\Container;
 
 /**
  * Communicate with Filmweb via the given Transport object
@@ -14,25 +13,10 @@ use Orkan\Filmweb\Transport\Transport;
 class Api
 {
 	/**
-	 * Filmweb API constants
-	 */
-	const URL = 'https://ssl.filmweb.pl/api';
-	const VER = '1.0';
-	const APP = 'android';
-	const KEY = 'qjcGhW2JnvGT9dfCt3uT_jozR3s';
-
-	/**
 	 * Slowdown() statistics
 	 */
 	private $calls = 0; // Current call no.
 	private $limit_total = 0; // Total sleep time in microseconds
-
-	/**
-	 * The Transport obiect given by main Filmweb class
-	 *
-	 * @var Transport
-	 */
-	private $send;
 
 	/**
 	 * API method
@@ -68,22 +52,57 @@ class Api
 	private $output;
 
 	/**
+	 * Dependency Injection Container
+	 *
+	 * @var Container
+	 */
+	private $app;
+
+	/**
 	 * Options merged with defaults
 	 *
 	 * @var array[]
 	 */
 	private $cfg;
 
-	public function __construct( Transport $t, array $cfg )
+	public function __construct( Container $app, array $config )
 	{
 		$this->cfg = array_merge( array(
 			/* @formatter:off */
+			'methods_ns' => __NAMESPACE__ . '\\Method\\', // Methods namespace used
+
+			/* Filmweb API constans */
+			'api_url' => 'https://ssl.filmweb.pl/api',
+			'api_ver' => '1.0',
+			'api_app' => 'android',
+			'api_key' => 'qjcGhW2JnvGT9dfCt3uT_jozR3s',
+
 			'limit_call' => 8, // usleep() after reaching this limit of call()'s
 			'limit_usec' => 300000, // In microseconds! 1s == 1 000 000 us
-		), $cfg);
+		), $config);
 		/* @formatter:on */
 
-		$this->send = $t;
+		$this->app = $app;
+	}
+
+	/**
+	 * Retrive API method from continer or create one
+	 *
+	 * @param string $method API method name
+	 * @return API method instance
+	 */
+	private function getMethod( string $method )
+	{
+		if ( ! $this->app->offsetExists( $method ) ) {
+
+			$m = $this->cfg['methods_ns'] . $method;
+
+			$this->app[$method] = function () use ($m ) {
+				return new $m();
+			};
+		}
+
+		return $this->app[$method];
 	}
 
 	/**
@@ -101,23 +120,21 @@ class Api
 		// Reduce the frequency of API calls
 		$this->slowdown();
 
-		$method = __NAMESPACE__ . '\\Method\\' . $method; // cant use the 'use' statement
-		$m = new $method();
-
+		$m = $this->getMethod( $method );
 		$this->request = $m->format( $args );
 
-		Logger::debug( $this->request );
-		Logger::info( $this->request );
+		$this->app['logger']->debug( $this->request );
+		$this->app['logger']->info( $this->request );
 
-		$this->response = $this->send->with(
+		$this->response = $this->app['send']->with(
 		/* @formatter:off */
 			$m->getType(),
-			self::URL,
-			self::getQuery( $this->request )
+			$this->cfg['api_url'],
+			$this->getQuery( $this->request )
 		);
 		/* @formatter:on */
 
-		Logger::debug( 'Response: ' . $this->response );
+		$this->app['logger']->debug( 'Response: ' . $this->response );
 
 		$r = explode( "\n", $this->response );
 
@@ -128,7 +145,7 @@ class Api
 		$this->status = isset( $r[0] ) ? $r[0] : 'null'; // ok|err
 		$this->output = $r[1];
 
-		Logger::info( "status [{$this->status}]" );
+		$this->app['logger']->info( "status [{$this->status}]" );
 
 		// Stop execution on error!
 		if ( in_array( $this->status, array( 'err', 'null' ) ) ) {
@@ -163,8 +180,8 @@ class Api
 		$data1 = substr( $this->output, 0, $i );
 		$data2 = substr( $this->output, $i );
 
-		Logger::debug( 'json_decode: ' . $data1 );
-		Logger::debug( 'extra: ' . $data2 );
+		$this->app['logger']->debug( 'json_decode: ' . $data1 );
+		$this->app['logger']->debug( 'extra: ' . $data2 );
 
 		$json = json_decode( $data1 );
 		if ( null === $json ) {
@@ -180,7 +197,7 @@ class Api
 		/* @formatter:on */
 
 		if ( array_key_exists( $key, $all ) ) {
-			return $all[ $key ];
+			return $all[$key];
 		}
 
 		return $all;
@@ -192,19 +209,19 @@ class Api
 	 * @param string $method Filmweb API method
 	 * @return string Query string
 	 */
-	private static function getQuery( string $method ): string
+	private function getQuery( string $method ): string
 	{
 		$met = $method . '\n'; // required ?!
 		$out = array(
 		/* @formatter:off */
 			'methods'   => $met,
-			'signature' => self::VER . ',' . md5( $met . self::APP . self::KEY ),
-			'version'   => self::VER,
-			'appId'     => self::APP,
+			'signature' => $this->cfg['api_ver'] . ',' . md5( $met . $this->cfg['api_app'] . $this->cfg['api_key'] ),
+			'version'   => $this->cfg['api_ver'],
+			'appId'     => $this->cfg['api_app'],
 		);
 		/* @formatter:on */
 
-		Logger::debug( Utils::print_r( $out ) );
+		$this->app['logger']->debug( Utils::print_r( $out ) );
 
 		return http_build_query( $out );
 	}
@@ -245,7 +262,8 @@ class Api
 	private function slowdown(): void
 	{
 		if ( 0 == ++ $this->calls % $this->cfg['limit_call'] ) {
-			Logger::debug( "Current Api call #{$this->calls}. Sleeping for " . round( $this->cfg['limit_usec'] / 1000000, 3 ) . " seconds..." );
+			$this->app['logger']->debug( "Current Api call #{$this->calls}. Sleeping for " . round( $this->cfg['limit_usec'] / 1000000, 3 ) . " seconds..." );
+
 			usleep( $this->cfg['limit_usec'] );
 			$this->limit_total += $this->cfg['limit_usec'];
 		}
