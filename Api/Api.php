@@ -62,8 +62,19 @@ class Api
 	{
 		$this->app = $app;
 
-		$this->app['cfg'] = array_merge( array(
-			/* @formatter:off */
+		// Configuration merged with defaults
+		$this->app['cfg'] = array_merge( $this->getDefaults(), $this->app['cfg'] );
+	}
+
+	/**
+	 * Get default config
+	 *
+	 * @return array Default config
+	 */
+	public function getDefaults()
+	{
+		/* @formatter:off */
+		return array(
 			'methods_ns' => __NAMESPACE__ . '\\Method\\', // Methods namespace used
 
 			/* Filmweb API constans */
@@ -74,7 +85,7 @@ class Api
 
 			'limit_call' => 8, // usleep() after reaching this limit of call()'s
 			'limit_usec' => 300000, // In microseconds! 1s == 1 000 000 us
-		), $this->app['cfg']);
+		);
 		/* @formatter:on */
 	}
 

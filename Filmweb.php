@@ -24,6 +24,8 @@ class Filmweb
 	/**
 	 * Dependency Injection Container
 	 *
+	 * @see https://pimple.symfony.com/
+	 *
 	 * @var Container
 	 */
 	private $app;
@@ -44,18 +46,8 @@ class Filmweb
 		// Create Dependency Injection Container
 		$this->app = new Container();
 
-		// Main configuration merged with defaults
-		$this->app['cfg'] = array_merge( array(
-			/* @formatter:off */
-			'cli_codepage' => 'cp852',
-			'cookie_file'  => dirname( __FILE__ ) . DIRECTORY_SEPARATOR . "{$login}-cookie.txt",
-
-			/* Services */
-			'api'       => 'Orkan\\Filmweb\\Api\\Api',
-			'tarnsport' => 'Orkan\\Filmweb\\Transport\\Curl',
-			'logger'    => 'Orkan\\Filmweb\\Logger',
-		), $config);
-		/* @formatter:on */
+		// Configuration merged with defaults
+		$this->app['cfg'] = array_merge( $this->getDefaults(), $config );
 
 		$this->app['errorHandler'] = array( $this, 'errorHandler' ); // DI property
 		$this->setErroHandler(); // Set Error Handler as soon as possible!
@@ -74,6 +66,26 @@ class Filmweb
 		// Login to filmweb.pl
 		$this->app['logger']->info( self::getTitle() ); // Introduce itself! :)
 		$this->app['api']->call( 'login', array( login::NICKNAME => $login, login::PASSWORD => $pass ) );
+	}
+
+	/**
+	 * Get default config
+	 *
+	 * @return array Default config
+	 */
+	public function getDefaults()
+	{
+		/* @formatter:off */
+		return array(
+			'cli_codepage' => 'cp852',
+			'cookie_file'  => __DIR__ . '/SESSION_ID',
+
+			/* Services */
+			'api'       => 'Orkan\\Filmweb\\Api\\Api',
+			'tarnsport' => 'Orkan\\Filmweb\\Transport\\Curl',
+			'logger'    => 'Orkan\\Filmweb\\Logger',
+		);
+		/* @formatter:on */
 	}
 
 	/**

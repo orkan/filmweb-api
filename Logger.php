@@ -36,20 +36,8 @@ class Logger
 	{
 		$this->app = $app;
 
-		// Main configuration merged with defaults
-		$this->app['cfg'] = array_merge( array(
-			/* @formatter:off */
-			'log_channel'  => basename( __FILE__ ),
-			'log_file'     => basename( __FILE__, 'php' ) . 'log',
-			'log_timezone' => 'UTC', // @see https://www.php.net/manual/en/timezones.php
-			'is_debug'     => false,
-
-			/* Leave these for \Monolog defaults or define your own in $cfg */
-			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
-			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
-			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
-		), $this->app['cfg']);
-		/* @formatter:on */
+		// Configuration merged with defaults
+		$this->app['cfg'] = array_merge( $this->getDefaults(), $this->app['cfg'] );
 
 		$cfg = $this->app['cfg'];
 
@@ -62,6 +50,28 @@ class Logger
 		$this->logger->setTimezone( new \DateTimeZone( $cfg['log_timezone'] ) );
 
 		$this->is_debug = $cfg['is_debug'];
+	}
+
+	/**
+	 * Get default config
+	 *
+	 * @return array Default config
+	 */
+	public function getDefaults()
+	{
+		/* @formatter:off */
+		return array(
+			'log_channel'  => basename( __FILE__ ),
+			'log_file'     => basename( __FILE__, 'php' ) . 'log',
+			'log_timezone' => 'UTC', // @see https://www.php.net/manual/en/timezones.php
+			'is_debug'     => false,
+
+			/* Leave these for \Monolog defaults or define your own in $cfg */
+			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
+			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
+			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+		);
+		/* @formatter:on */
 	}
 
 	/**
