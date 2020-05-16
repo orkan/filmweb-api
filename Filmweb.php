@@ -29,27 +29,23 @@ class Filmweb
 	private $app;
 
 	/**
-	 * Options merged with defaults
-	 *
-	 * @var array[]
-	 */
-	private $cfg;
-
-	/**
 	 * Initialize child objects: Transport & Api
 	 * Login to Filmweb
 	 *
 	 * @param string $login
 	 * @param string $pass
-	 * @param array $cfg Overrides for $this->cfg
+	 * @param array $cfg Overrides for $this->app['cfg']
 	 */
 	public function __construct( string $login, string $pass, array $config = [] )
 	{
 		// Save start execution time
 		$this->getExectime();
 
+		// Create Dependency Injection Container
+		$this->app = new Container();
+
 		// Main configuration merged with defaults
-		$this->cfg = array_merge( array(
+		$this->app['cfg'] = array_merge( array(
 			/* @formatter:off */
 			'cli_codepage' => 'cp852',
 			'cookie_file'  => dirname( __FILE__ ) . DIRECTORY_SEPARATOR . "{$login}-cookie.txt",
@@ -61,26 +57,20 @@ class Filmweb
 		), $config);
 		/* @formatter:on */
 
-		// /////////////////////////////////////////////////////////////
-		// Create Dependency Injection Container
-		$this->app = new Container();
-
 		$this->app['errorHandler'] = array( $this, 'errorHandler' ); // DI property
 		$this->setErroHandler(); // Set Error Handler as soon as possible!
 
-		$this->app['logger'] = function () {
-			return new $this->cfg['logger']( $this->cfg );
+		// Create application services
+		$this->app['logger'] = function ( $c ) {
+			return new $this->app['cfg']['logger']( $c );
 		};
-
 		$this->app['send'] = function ( $c ) {
-			return new $this->cfg['tarnsport']( $c, $this->cfg );
+			return new $this->app['cfg']['tarnsport']( $c );
 		};
-
 		$this->app['api'] = function ( $c ) {
-			return new $this->cfg['api']( $c, $this->cfg );
+			return new $this->app['cfg']['api']( $c );
 		};
 
-		// /////////////////////////////////////////////////////////////
 		// Login to filmweb.pl
 		$this->app['logger']->info( self::getTitle() ); // Introduce itself! :)
 		$this->app['api']->call( 'login', array( login::NICKNAME => $login, login::PASSWORD => $pass ) );
@@ -153,7 +143,7 @@ class Filmweb
 		$msg = "$msg $type: $errstr in $errfile on line $errline\n";
 
 		// Print message to terminal in CLI mode, or echo it otherwise
-		Utils::print( $msg, $is_error, $this->cfg['cli_codepage'] );
+		Utils::print( $msg, $is_error, $this->app['cfg']['cli_codepage'] );
 
 		// Call appropriate Logger method type
 		$this->app['logger']->$type( $msg );

@@ -58,16 +58,11 @@ class Api
 	 */
 	private $app;
 
-	/**
-	 * Options merged with defaults
-	 *
-	 * @var array[]
-	 */
-	private $cfg;
-
-	public function __construct( Container $app, array $config )
+	public function __construct( Container $app )
 	{
-		$this->cfg = array_merge( array(
+		$this->app = $app;
+
+		$this->app['cfg'] = array_merge( array(
 			/* @formatter:off */
 			'methods_ns' => __NAMESPACE__ . '\\Method\\', // Methods namespace used
 
@@ -79,10 +74,8 @@ class Api
 
 			'limit_call' => 8, // usleep() after reaching this limit of call()'s
 			'limit_usec' => 300000, // In microseconds! 1s == 1 000 000 us
-		), $config);
+		), $this->app['cfg']);
 		/* @formatter:on */
-
-		$this->app = $app;
 	}
 
 	/**
@@ -95,7 +88,7 @@ class Api
 	{
 		if ( ! $this->app->offsetExists( $method ) ) {
 
-			$m = $this->cfg['methods_ns'] . $method;
+			$m = $this->app['cfg']['methods_ns'] . $method;
 
 			$this->app[$method] = function () use ($m ) {
 				return new $m();
@@ -129,7 +122,7 @@ class Api
 		$this->response = $this->app['send']->with(
 		/* @formatter:off */
 			$m->getType(),
-			$this->cfg['api_url'],
+			$this->app['cfg']['api_url'],
 			$this->getQuery( $this->request )
 		);
 		/* @formatter:on */
@@ -215,9 +208,9 @@ class Api
 		$out = array(
 		/* @formatter:off */
 			'methods'   => $met,
-			'signature' => $this->cfg['api_ver'] . ',' . md5( $met . $this->cfg['api_app'] . $this->cfg['api_key'] ),
-			'version'   => $this->cfg['api_ver'],
-			'appId'     => $this->cfg['api_app'],
+			'signature' => $this->app['cfg']['api_ver'] . ',' . md5( $met . $this->app['cfg']['api_app'] . $this->app['cfg']['api_key'] ),
+			'version'   => $this->app['cfg']['api_ver'],
+			'appId'     => $this->app['cfg']['api_app'],
 		);
 		/* @formatter:on */
 
@@ -261,11 +254,11 @@ class Api
 	 */
 	private function slowdown(): void
 	{
-		if ( 0 == ++ $this->calls % $this->cfg['limit_call'] ) {
-			$this->app['logger']->debug( "Current Api call #{$this->calls}. Sleeping for " . round( $this->cfg['limit_usec'] / 1000000, 3 ) . " seconds..." );
+		if ( 0 == ++ $this->calls % $this->app['cfg']['limit_call'] ) {
+			$this->app['logger']->debug( "Current Api call #{$this->calls}. Sleeping for " . round( $this->app['cfg']['limit_usec'] / 1000000, 3 ) . " seconds..." );
 
-			usleep( $this->cfg['limit_usec'] );
-			$this->limit_total += $this->cfg['limit_usec'];
+			usleep( $this->app['cfg']['limit_usec'] );
+			$this->limit_total += $this->app['cfg']['limit_usec'];
 		}
 	}
 

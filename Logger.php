@@ -2,6 +2,8 @@
 
 namespace Orkan\Filmweb;
 
+use Pimple\Container;
+
 /**
  * A logging class
  *
@@ -24,12 +26,18 @@ class Logger
 	private $is_debug;
 
 	/**
-	 * Initialize logger with this file
+	 * Dependency Injection Container
+	 *
+	 * @var Container
 	 */
-	public function __construct( array $config )
+	private $app;
+
+	public function __construct( Container $app )
 	{
+		$this->app = $app;
+
 		// Main configuration merged with defaults
-		$cfg = array_merge( array(
+		$this->app['cfg'] = array_merge( array(
 			/* @formatter:off */
 			'log_channel'  => basename( __FILE__ ),
 			'log_file'     => basename( __FILE__, 'php' ) . 'log',
@@ -40,8 +48,10 @@ class Logger
 			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
 			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
 			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
-		), $config);
+		), $this->app['cfg']);
 		/* @formatter:on */
+
+		$cfg = $this->app['cfg'];
 
 		$this->logger = new \Monolog\Logger( $cfg['log_channel'] ); // %channel%
 		$logformat = new \Monolog\Formatter\LineFormatter( $cfg['log_format'], $cfg['log_datetime'] );
