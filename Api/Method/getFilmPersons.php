@@ -59,6 +59,6 @@ final class getFilmPersons extends Method
 	 */
 	public function format( array $args ): string
 	{
-		return sprintf( $this . ' [%u, %u, 0, 50]', $args[self::FILMID], $args[self::ROLE] );
+		return sprintf( $this . ' [%u, %u, 0, 50]', $args[ self::FILMID ], $args[ self::ROLE ] );
 	}
 }
