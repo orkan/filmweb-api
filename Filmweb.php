@@ -49,8 +49,10 @@ class Filmweb
 		// Configuration merged with defaults
 		$this->app['cfg'] = array_merge( $this->getDefaults(), $config );
 
-		$this->app['errorHandler'] = array( $this, 'errorHandler' ); // DI property
-		$this->setErroHandler(); // Set Error Handler as soon as possible!
+		// Set Error Handler as soon as possible! (DI property)
+		// @see $this->errorHandler()
+		$this->app['errorHandler'] = array( $this, 'errorHandler' );
+		set_error_handler( $this->app['errorHandler'] );
 
 		// Create application services
 		$this->app['logger'] = function ( $c ) {
@@ -96,18 +98,6 @@ class Filmweb
 	public function getApi()
 	{
 		return $this->app['api'];
-	}
-
-	/**
-	 * Set custom error handler
-	 * Keep this in separate function for easy test stubbing
-	 *
-	 * @return \Orkan\Filmweb\Api\Api
-	 */
-	public function setErroHandler(): void
-	{
-		// @see $this->errorHandler()
-		set_error_handler( $this->app['errorHandler'] );
 	}
 
 	/**
