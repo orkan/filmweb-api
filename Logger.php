@@ -19,13 +19,6 @@ class Logger
 	private $logger;
 
 	/**
-	 * Debug mode ON/OFF
-	 *
-	 * @var bool
-	 */
-	private $is_debug;
-
-	/**
 	 * Dependency Injection Container
 	 *
 	 * @var Container
@@ -36,20 +29,18 @@ class Logger
 	{
 		$this->app = $app;
 
-		// Configuration merged with defaults
+		// Merge configuration with defaults
 		$this->app['cfg'] = array_merge( $this->getDefaults(), $this->app['cfg'] );
 
 		$cfg = $this->app['cfg'];
 
+		// Create the Logger
 		$this->logger = new \Monolog\Logger( $cfg['log_channel'] ); // %channel%
 		$logformat = new \Monolog\Formatter\LineFormatter( $cfg['log_format'], $cfg['log_datetime'] );
 		$logstream = new \Monolog\Handler\RotatingFileHandler( $cfg['log_file'], $cfg['log_keep'] );
-
 		$logstream->setFormatter( $logformat );
 		$this->logger->pushHandler( $logstream ); // DEBUG = 100; log everything, INFO = 200; log above >= 200
 		$this->logger->setTimezone( new \DateTimeZone( $cfg['log_timezone'] ) );
-
-		$this->is_debug = $cfg['is_debug'];
 	}
 
 	/**
@@ -62,9 +53,8 @@ class Logger
 		/* @formatter:off */
 		return array(
 			'log_channel'  => basename( __FILE__ ),
-			'log_file'     => basename( __FILE__, 'php' ) . 'log',
+			'log_file'     => dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'filmweb-api.log',
 			'log_timezone' => 'UTC', // @see https://www.php.net/manual/en/timezones.php
-			'is_debug'     => false,
 
 			/* Leave these for \Monolog defaults or define your own in $cfg */
 			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
@@ -75,13 +65,13 @@ class Logger
 	}
 
 	/**
-	 * Get name of the last calling function (from outside of this class)
+	 * Get the name of last calling function
 	 *
-	 * @return string In format [Orkan\Filmweb\Filmweb->__construct()] $message
+	 * @return string In format [Namespace\Class->method()] $message
 	 */
 	private function backtrace()
 	{
-		$level = 2; // backtrace history steps back
+		$level = 2; // backtrace history (before this class)
 
 		// https://www.php.net/manual/en/function.debug-backtrace.php
 		$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, $level + 1 );
@@ -96,7 +86,7 @@ class Logger
 	 */
 	public function debug( string $message ): void
 	{
-		if ( ! $this->is_debug ) {
+		if ( ! $this->app['cfg']['is_debug'] ) {
 			return;
 		}
 

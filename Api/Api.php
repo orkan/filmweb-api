@@ -62,7 +62,7 @@ class Api
 	{
 		$this->app = $app;
 
-		// Configuration merged with defaults
+		// Merge configuration with defaults
 		$this->app['cfg'] = array_merge( $this->getDefaults(), $this->app['cfg'] );
 	}
 

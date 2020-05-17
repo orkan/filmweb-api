@@ -63,7 +63,7 @@ class Filmweb
 		// Create Dependency Injection Container
 		$this->app = new Container();
 
-		// Configuration merged with defaults
+		// Merge configuration with defaults
 		$this->app['cfg'] = array_merge( $this->getDefaults(), $config );
 
 		// Set Error Handler as soon as possible! (DI property)
@@ -93,7 +93,8 @@ class Filmweb
 		/* @formatter:off */
 		return array(
 			'cli_codepage' => 'cp852',
-			'cookie_file'  => __DIR__ . '/SESSION_ID',
+			'cookie_file'  => dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'SESSION_ID',
+			'is_debug'     => false,
 
 			/* Services */
 			'api'       => 'Orkan\\Filmweb\\Api\\Api',
