@@ -10,7 +10,7 @@ use Pimple\Container;
  *
  * @author Orkan
  */
-final class Curl extends Transport
+class Curl extends Transport
 {
 	private $defaults = array(
 	/* @formatter:off */

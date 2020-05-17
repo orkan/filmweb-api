@@ -16,7 +16,7 @@ class Api
 	 * Slowdown() statistics
 	 */
 	private $calls = 0; // Current call no.
-	private $limit_total = 0; // Total sleep time in microseconds
+	private $sleep_total = 0; // Total sleep time in microseconds
 
 	/**
 	 * API method
@@ -138,7 +138,7 @@ class Api
 		);
 		/* @formatter:on */
 
-		$this->app['logger']->debug( 'Response: ' . $this->response );
+		$this->app['logger']->debug( 'Response: ' . json_encode( $this->response ) );
 
 		$r = explode( "\n", $this->response );
 
@@ -194,9 +194,10 @@ class Api
 
 		$all = array(
 		/* @formatter:off */
-			'json'  => $json,
+			'array' => $json,
 			'extra' => $data2,
-			'raw'   => $this->output,
+			'json'  => $this->output,
+			'raw'   => $this->response,
 		);
 		/* @formatter:on */
 
@@ -267,9 +268,8 @@ class Api
 	{
 		if ( 0 == ++ $this->calls % $this->app['cfg']['limit_call'] ) {
 			$this->app['logger']->debug( "Current Api call #{$this->calls}. Sleeping for " . round( $this->app['cfg']['limit_usec'] / 1000000, 3 ) . " seconds..." );
-
 			usleep( $this->app['cfg']['limit_usec'] );
-			$this->limit_total += $this->app['cfg']['limit_usec'];
+			$this->sleep_total += $this->app['cfg']['limit_usec'];
 		}
 	}
 
@@ -280,7 +280,7 @@ class Api
 	 */
 	public function getTotalSleep(): float
 	{
-		return $this->limit_total / 1000000;
+		return $this->sleep_total / 1000000;
 	}
 
 	/**
@@ -290,7 +290,7 @@ class Api
 	 */
 	public function getTotalTime(): float
 	{
-		return $this->send->getTotalTime();
+		return $this->app['send']->getTotalTime();
 	}
 
 	/**
@@ -310,7 +310,7 @@ class Api
 	 */
 	public function getTotalDataSent(): int
 	{
-		return $this->send->getTotalDataSent();
+		return $this->app['send']->getTotalDataSent();
 	}
 
 	/**
@@ -320,6 +320,6 @@ class Api
 	 */
 	public function getTotalDataRecived(): int
 	{
-		return $this->send->getTotalDataRecived();
+		return $this->app['send']->getTotalDataRecived();
 	}
 }
