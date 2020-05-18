@@ -22,6 +22,20 @@ class Filmweb
 	private $start_time = null;
 
 	/**
+	 * Save credentials from constructor
+	 *
+	 * @var string Login
+	 */
+	private $login;
+
+	/**
+	 * Save credentials from constructor
+	 *
+	 * @var string Password
+	 */
+	private $pass;
+
+	/**
 	 * Dependency Injection Container
 	 *
 	 * @see https://pimple.symfony.com/
@@ -42,6 +56,9 @@ class Filmweb
 	{
 		// Save start execution time
 		$this->getExectime();
+
+		$this->login = $login;
+		$this->pass = $pass;
 
 		// Create Dependency Injection Container
 		$this->app = new Container();
@@ -64,10 +81,6 @@ class Filmweb
 		$this->app['api'] = function ( $c ) {
 			return new $this->app['cfg']['api']( $c );
 		};
-
-		// Login to filmweb.pl
-		$this->app['logger']->info( self::getTitle() ); // Introduce itself! :)
-		$this->app['api']->call( 'login', array( login::NICKNAME => $login, login::PASSWORD => $pass ) );
 	}
 
 	/**
@@ -75,7 +88,7 @@ class Filmweb
 	 *
 	 * @return array Default config
 	 */
-	public function getDefaults()
+	private function getDefaults()
 	{
 		/* @formatter:off */
 		return array(
@@ -91,12 +104,19 @@ class Filmweb
 	}
 
 	/**
-	 * Get Api instance
+	 * Login to Filmweb
+	 * Return Api instance
 	 *
 	 * @return \Orkan\Filmweb\Api\Api
 	 */
 	public function getApi()
 	{
+		// On first call to Api Login to filmweb.pl
+		if ( ! $this->app['api']->getTotalCalls() ) {
+			$this->app['logger']->info( self::getTitle() ); // Introduce itself! :)
+			$this->app['api']->call( 'login', array( login::NICKNAME => $this->login, login::PASSWORD => $this->pass ) );
+		}
+
 		return $this->app['api'];
 	}
 

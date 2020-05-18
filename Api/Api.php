@@ -71,7 +71,7 @@ class Api
 	 *
 	 * @return array Default config
 	 */
-	public function getDefaults()
+	private function getDefaults()
 	{
 		/* @formatter:off */
 		return array(
@@ -291,6 +291,16 @@ class Api
 	public function getTotalTime(): float
 	{
 		return $this->send->getTotalTime();
+	}
+
+	/**
+	 * Get total calls counter
+	 *
+	 * @return int Total calls
+	 */
+	public function getTotalCalls(): int
+	{
+		return $this->calls;
 	}
 
 	/**
