@@ -142,4 +142,14 @@ class Logger
 	{
 		$this->logger->info( $message );
 	}
+
+	/**
+	 * Dumb method to cover error type in Filmweb->errorHandler()
+	 *
+	 * @param string $message
+	 */
+	public function unknown( string $message ): void
+	{
+		$this->logger->info( $message );
+	}
 }
