@@ -79,6 +79,9 @@ class Filmweb
 		$this->app['send'] = function ( $c ) {
 			return new $this->app['cfg']['tarnsport']( $c );
 		};
+		$this->app['request'] = function ( $c ) {
+			return new $this->app['cfg']['request']( $c );
+		};
 		$this->app['api'] = function ( $c ) {
 			return new $this->app['cfg']['api']( $c );
 		};
@@ -101,6 +104,7 @@ class Filmweb
 			/* Services */
 			'api'       => 'Orkan\\Filmweb\\Api\\Api',
 			'tarnsport' => 'Orkan\\Filmweb\\Transport\\Curl',
+			'request'   => 'Orkan\\Filmweb\\Transport\\CurlRequest',
 			'logger'    => 'Orkan\\Filmweb\\Logger',
 		);
 		/* @formatter:on */
