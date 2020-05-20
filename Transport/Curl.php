@@ -61,8 +61,8 @@ class Curl extends Transport
 	 */
 	public function get( string $url, string $query ): string
 	{
-		$options = array(
 		/* @formatter:off */
+		$options = array(
 			CURLOPT_URL => $url . '?' . $query,
 		);
 		/* @formatter:on */
@@ -79,8 +79,8 @@ class Curl extends Transport
 	 */
 	public function post( string $url, string $query ): string
 	{
-		$options = array(
 		/* @formatter:off */
+		$options = array(
 			CURLOPT_URL        => $url,
 			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => urldecode( $query ),

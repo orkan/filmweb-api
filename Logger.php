@@ -55,6 +55,7 @@ class Logger
 			'log_channel'  => basename( __FILE__ ),
 			'log_file'     => dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'filmweb-api.log',
 			'log_timezone' => 'UTC', // @see https://www.php.net/manual/en/timezones.php
+			'is_debug'     => false,
 
 			/* Leave these for \Monolog defaults or define your own in $cfg */
 			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
