@@ -161,16 +161,16 @@ class Api
 
 	/**
 	 * Collect data from the query under following keys:
-	 * array - JSON decoded object
-	 * json - JSON object
-	 * extra - second line of response
-	 * raw - raw response
-	 * all/null - an array with all of the above
+	 * array/null -> (array) JSON decoded object
+	 * json -> (string) JSON object
+	 * extra -> (string) second line of response
+	 * raw -> (string) raw response
+	 * all -> (array) contains all the above
 	 *
 	 * @param string $key array|json|extra|raw|null
 	 * @return mixed Requested data
 	 */
-	public function getData( string $key = 'all' )
+	public function getData( string $key = 'array' )
 	{
 		if ( 'raw' === $key ) {
 			return $this->response;

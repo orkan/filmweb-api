@@ -25,12 +25,12 @@ $api = $filmweb->getApi();
 
 // Get user info
 $api->call( 'isLoggedUser' );
-$user = $api->getData( 'array' );
+$user = $api->getData();
 $userId = $user[ isLoggedUser::USERID ];
 
 // Get list of voted films
 $api->call( 'getUserFilmVotes', array( $userId ) );
-$films = $api->getData( 'array' );
+$films = $api->getData();
 
 // ...
 
