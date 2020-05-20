@@ -2,50 +2,82 @@
 
 namespace Orkan\Filmweb;
 
+use Pimple\Container;
+
 /**
- * A semi-singleton logging class
- * Usage:
- * Logger::init($cfg); // Initialize logger first!
- * Logger::debug('some message'); // later in code...
+ * A logging class
  *
  * @author Orkan
  */
 class Logger
 {
-	private static $instance;
+	/**
+	 * Logger instance
+	 *
+	 * @var \Monolog\Logger
+	 */
+	private $logger;
 
 	/**
-	 * Initialize logger with this file
+	 * Dependency Injection Container
+	 *
+	 * @var Container
 	 */
-	public static function init( $cfg )
+	private $app;
+
+	public function __construct( Container $app )
 	{
-		if ( ! self::$instance ) {
-			// https://github.com/Seldaek/monolog/blob/master/doc/01-usage.md
-			$logger = new \Monolog\Logger( $cfg['log_channel'] ); // %channel%
-			$logformat = new \Monolog\Formatter\LineFormatter( $cfg['log_format'], defined( 'FILMWEB_DEBUG' ) ? null : $cfg['log_datetime'] );
-			$logstream = new \Monolog\Handler\RotatingFileHandler( $cfg['log_file'], $cfg['log_keep'] );
+		$this->app = $app;
 
-			$logstream->setFormatter( $logformat );
-			$logger->pushHandler( $logstream ); // DEBUG = 100; log everything, INFO = 200; log above >= 200
-			$logger->setTimezone( new \DateTimeZone( $cfg['log_timezone'] ) );
+		// Merge configuration with defaults
+		$this->app['cfg'] = array_merge( $this->getDefaults(), $this->app['cfg'] );
 
-			self::$instance = $logger;
-		}
+		$cfg = $this->app['cfg'];
+
+		// Create the Logger
+		$this->logger = new \Monolog\Logger( $cfg['log_channel'] ); // %channel%
+		$logformat = new \Monolog\Formatter\LineFormatter( $cfg['log_format'], $cfg['log_datetime'] );
+		$logstream = new \Monolog\Handler\RotatingFileHandler( $cfg['log_file'], $cfg['log_keep'] );
+		$logstream->setFormatter( $logformat );
+		$this->logger->pushHandler( $logstream ); // DEBUG = 100; log everything, INFO = 200; log above >= 200
+		$this->logger->setTimezone( new \DateTimeZone( $cfg['log_timezone'] ) );
 	}
 
 	/**
-	 * Get name of the last calling function (from outside of this class)
+	 * Get default config
 	 *
-	 * @return string I.e. [Orkan\Filmweb\Filmweb->__construct()] $message
+	 * @return array Default config
 	 */
-	private static function caller()
+	public function getDefaults()
 	{
-		$level = 2; // caller history steps back
+		/* @formatter:off */
+		return array(
+			'log_channel'  => basename( __FILE__ ),
+			'log_file'     => dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'filmweb-api.log',
+			'log_timezone' => 'UTC', // @see https://www.php.net/manual/en/timezones.php
+			'is_debug'     => false,
+
+			/* Leave these for \Monolog defaults or define your own in $cfg */
+			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
+			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
+			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+		);
+		/* @formatter:on */
+	}
+
+	/**
+	 * Get the name of last calling function
+	 *
+	 * @return string In format [Namespace\Class->method()] $message
+	 */
+	private function backtrace()
+	{
+		$level = 2; // backtrace history (before this class)
 
 		// https://www.php.net/manual/en/function.debug-backtrace.php
 		$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, $level + 1 );
 
-		return isset( $trace[ $level ] ) ? "[{$trace[$level]['class']}{$trace[$level]['type']}{$trace[$level]['function']}()] " : '';
+		return isset( $trace[$level] ) ? "[{$trace[$level]['class']}{$trace[$level]['type']}{$trace[$level]['function']}()] " : '';
 	}
 
 	/**
@@ -53,13 +85,13 @@ class Logger
 	 *
 	 * @param string $message
 	 */
-	public static function debug( string $message ): void
+	public function debug( string $message ): void
 	{
-		if ( ! defined( 'FILMWEB_DEBUG' ) ) {
+		if ( ! $this->app['cfg']['is_debug'] ) {
 			return;
 		}
 
-		self::$instance->debug( self::caller() . $message );
+		$this->logger->debug( $this->backtrace() . $message );
 	}
 
 	/**
@@ -67,9 +99,9 @@ class Logger
 	 *
 	 * @param string $message
 	 */
-	public static function error( string $message ): void
+	public function error( string $message ): void
 	{
-		self::$instance->error( self::caller() . $message );
+		$this->logger->error( $this->backtrace() . $message );
 	}
 
 	/**
@@ -77,9 +109,9 @@ class Logger
 	 *
 	 * @param string $message
 	 */
-	public static function warning( string $message ): void
+	public function warning( string $message ): void
 	{
-		self::$instance->warning( $message );
+		$this->logger->warning( $message );
 	}
 
 	/**
@@ -87,9 +119,9 @@ class Logger
 	 *
 	 * @param string $message
 	 */
-	public static function notice( string $message ): void
+	public function notice( string $message ): void
 	{
-		self::$instance->notice( $message );
+		$this->logger->notice( $message );
 	}
 
 	/**
@@ -97,8 +129,18 @@ class Logger
 	 *
 	 * @param string $message
 	 */
-	public static function info( string $message ): void
+	public function info( string $message ): void
 	{
-		self::$instance->info( $message );
+		$this->logger->info( $message );
+	}
+
+	/**
+	 * Dumb method to cover error type in Filmweb->errorHandler()
+	 *
+	 * @param string $message
+	 */
+	public function unknown( string $message ): void
+	{
+		$this->logger->info( $message );
 	}
 }

@@ -2,18 +2,18 @@
 
 namespace Orkan\Filmweb\Transport;
 
-use Orkan\Filmweb\Logger;
 use Orkan\Filmweb\Utils;
+use Pimple\Container;
 
 /**
  * Curl http transport implementation
  *
  * @author Orkan
  */
-final class Curl extends Transport
+class Curl extends Transport
 {
-	private $defaults = array(
 	/* @formatter:off */
+	private $defaults = array(
 		CURLOPT_USERAGENT      => self::USERAGENT,
 		CURLOPT_CONNECTTIMEOUT => self::CONNECTTIMEOUT,
 		CURLOPT_TIMEOUT        => self::TIMEOUT,
@@ -31,17 +31,26 @@ final class Curl extends Transport
 	private $total_data_recived = 0;
 
 	/**
+	 * Dependency Injection Container
+	 *
+	 * @var Container
+	 */
+	private $app;
+
+	/**
 	 *
 	 * @param array $args
 	 */
-	public function __construct( array $args = [] )
+	public function __construct( Container $app )
 	{
+		$this->app = $app;
+
 		/* @formatter:off */
-		$this->defaults[ CURLOPT_COOKIEJAR ]  = $args[ 'cookie' ];
-		$this->defaults[ CURLOPT_COOKIEFILE ] = $args[ 'cookie' ];
+		$this->defaults[ CURLOPT_COOKIEJAR ]  = $this->app['cfg']['cookie_file'];
+		$this->defaults[ CURLOPT_COOKIEFILE ] = $this->app['cfg']['cookie_file'];
 		/* @formatter:on */
 
-		Logger::debug( Utils::print_r( $this->defaults ) );
+		$this->app['logger']->debug( Utils::print_r( $this->defaults ) );
 	}
 
 	/**
@@ -52,13 +61,13 @@ final class Curl extends Transport
 	 */
 	public function get( string $url, string $query ): string
 	{
-		$options = array(
 		/* @formatter:off */
+		$options = array(
 			CURLOPT_URL => $url . '?' . $query,
 		);
 		/* @formatter:on */
 
-		Logger::debug( Utils::print_r( $options ) );
+		$this->app['logger']->debug( Utils::print_r( $options ) );
 		return $this->exec( $options );
 	}
 
@@ -70,15 +79,15 @@ final class Curl extends Transport
 	 */
 	public function post( string $url, string $query ): string
 	{
-		$options = array(
 		/* @formatter:off */
+		$options = array(
 			CURLOPT_URL        => $url,
 			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => urldecode( $query ),
 		);
 		/* @formatter:on */
 
-		Logger::debug( Utils::print_r( $options ) );
+		$this->app['logger']->debug( Utils::print_r( $options ) );
 		return $this->exec( $options );
 	}
 
@@ -90,20 +99,20 @@ final class Curl extends Transport
 	 */
 	private function exec( array $options ): string
 	{
-		$request = curl_init();
-		curl_setopt_array( $request, $options + $this->defaults );
-		$response = curl_exec( $request );
-		$info = curl_getinfo( $request );
-		curl_close( $request );
+		$this->app['request']->init();
+		$this->app['request']->setOptArray( $options + $this->defaults );
+		$response = $this->app['request']->exec();
+		$info = $this->app['request']->getInfo();
+		$this->app['request']->close();
 
 		// Grab some statistics
 		// @see https://www.php.net/manual/en/function.curl-getinfo.php
-		$this->total_time += $info['total_time'];
+		$this->total_time += $info['total_time']; // float, in fractional seconds
 		$this->total_data_sent += $info['header_size'] + $info['request_size'];
-		$this->total_data_recived += $info['size_download'];
+		$this->total_data_recived += $info['size_download']; // @todo: Missing response headers size
 
 		if ( false === $response ) {
-			trigger_error( 'No response from server. Please check connection', E_USER_ERROR );
+			trigger_error( 'No response from server. Please check online connection', E_USER_ERROR );
 		}
 
 		return $response;
@@ -112,7 +121,7 @@ final class Curl extends Transport
 	/**
 	 * Get total request time
 	 *
-	 * @return float Total request time
+	 * @return float Total request time in fractional seconds
 	 */
 	public function getTotalTime(): float
 	{

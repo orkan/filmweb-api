@@ -1,4 +1,4 @@
-![repository-open-graph-template6d](https://user-images.githubusercontent.com/129182/81674511-9ddb2980-944d-11ea-9b5b-52ebef355ef7.jpg)
+![repository-open-graph-template7](https://user-images.githubusercontent.com/129182/82464654-9e636800-9abe-11ea-8946-ab7e525469f1.jpg)
 
 # Filmweb.pl API 
 Non-official API for Filmweb.pl
@@ -7,7 +7,6 @@ Non-official API for Filmweb.pl
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg?style=flat-square)](https://php.net/)
 
 * Highly configurable via an external configuration file
-* Includes [Monolog](https://github.com/Seldaek/monolog) for extended logging
 * Advanced PHP error handling
 * Supports PHP CLI mode
 
@@ -26,25 +25,21 @@ $api = $filmweb->getApi();
 
 // Get user info
 $api->call( 'isLoggedUser' );
-$user = $api->getData( 'json' );
+$user = $api->getData();
 $userId = $user[ isLoggedUser::USERID ];
 
 // Get list of voted films
 $api->call( 'getUserFilmVotes', array( $userId ) );
-$films = $api->getData( 'json' );
-
-// Get detailed info about movie ID:126180
-$api->call( 'getFilmInfoFull', array( 126180 ) );
-$film = $api->getData( 'json' );
+$films = $api->getData();
 
 // ...
 
 print_r( $films );
-print_r( $film );
 ```
 
 ## Third Party Packages
-* [Monolog](https://github.com/Seldaek/monolog)
+* [Monolog](https://github.com/Seldaek/monolog) for extended logging
+* [Pimple](https://pimple.symfony.com) for PHP Dependency Injection
 
 ## About
 ### Requirements

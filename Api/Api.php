@@ -2,9 +2,8 @@
 
 namespace Orkan\Filmweb\Api;
 
-use Orkan\Filmweb\Logger;
 use Orkan\Filmweb\Utils;
-use Orkan\Filmweb\Transport\Transport;
+use Pimple\Container;
 
 /**
  * Communicate with Filmweb via the given Transport object
@@ -14,27 +13,10 @@ use Orkan\Filmweb\Transport\Transport;
 class Api
 {
 	/**
-	 * Filmweb API constants
+	 * Slowdown() statistics
 	 */
-	const URL = 'https://ssl.filmweb.pl/api';
-	const VER = '1.0';
-	const APP = 'android';
-	const KEY = 'qjcGhW2JnvGT9dfCt3uT_jozR3s';
-
-	/**
-	 * Slowdown() communication a bit
-	 */
-	private $calls = 0; // Current call #no
-	private $limit_call = 8;
-	private $limit_usec = 300;
-	private $limit_total = 0;
-
-	/**
-	 * The Transport obiect given by main Filmweb class
-	 *
-	 * @var Transport
-	 */
-	private $send;
+	private $calls = 0; // Current call no.
+	private $sleep_total = 0; // Total sleep time in microseconds
 
 	/**
 	 * API method
@@ -51,7 +33,7 @@ class Api
 	private $response;
 
 	/**
-	 * First line of response from server. Usualy: ok|err
+	 * First line of response from server, usualy: ok|err
 	 *
 	 * @var string
 	 */
@@ -69,11 +51,62 @@ class Api
 	 */
 	private $output;
 
-	public function __construct( Transport $t, array $cfg )
+	/**
+	 * Dependency Injection Container
+	 *
+	 * @var Container
+	 */
+	private $app;
+
+	public function __construct( Container $app )
 	{
-		$this->send = $t;
-		$this->limit_call = isset( $cfg['limit_call'] ) ? $cfg['limit_call'] : $this->limit_call;
-		$this->limit_usec = isset( $cfg['limit_usec'] ) ? $cfg['limit_usec'] : $this->limit_usec;
+		$this->app = $app;
+
+		// Merge configuration with defaults
+		$this->app['cfg'] = array_merge( $this->getDefaults(), $this->app['cfg'] );
+	}
+
+	/**
+	 * Get default config
+	 *
+	 * @return array Default config
+	 */
+	private function getDefaults()
+	{
+		/* @formatter:off */
+		return array(
+			'methods_ns' => __NAMESPACE__ . '\\Method\\', // Methods namespace used
+
+			/* Filmweb API constans */
+			'api_url' => 'https://ssl.filmweb.pl/api',
+			'api_ver' => '1.0',
+			'api_app' => 'android',
+			'api_key' => 'qjcGhW2JnvGT9dfCt3uT_jozR3s',
+
+			'limit_call' => 8, // usleep() after reaching this limit of call()'s
+			'limit_usec' => 300000, // In microseconds! 1s == 1 000 000 us
+		);
+		/* @formatter:on */
+	}
+
+	/**
+	 * Retrive API method from continer or create one
+	 *
+	 * @param string $method API method name
+	 * @return API method instance
+	 */
+	private function getMethod( string $method )
+	{
+		if ( ! $this->app->offsetExists( $method ) ) {
+
+			$m = $this->app['cfg']['methods_ns'] . $method;
+
+			$this->app[$method] = function () use ($m ) {
+				return new $m();
+			};
+		}
+
+		return $this->app[$method];
 	}
 
 	/**
@@ -91,23 +124,21 @@ class Api
 		// Reduce the frequency of API calls
 		$this->slowdown();
 
-		$method = __NAMESPACE__ . '\\Method\\' . $method; // cant use the 'use' statement
-		$m = new $method();
-
+		$m = $this->getMethod( $method );
 		$this->request = $m->format( $args );
 
-		Logger::debug( $this->request );
-		Logger::info( $this->request );
+		$this->app['logger']->debug( $this->request );
+		$this->app['logger']->info( $this->request );
 
-		$this->response = $this->send->with(
+		$this->response = $this->app['send']->with(
 		/* @formatter:off */
 			$m->getType(),
-			self::URL,
-			self::getQuery( $this->request )
+			$this->app['cfg']['api_url'],
+			$this->getQuery( $this->request )
 		);
 		/* @formatter:on */
 
-		Logger::debug( 'Response: ' . $this->response );
+		$this->app['logger']->debug( 'Response: ' . json_encode( $this->response ) );
 
 		$r = explode( "\n", $this->response );
 
@@ -118,7 +149,7 @@ class Api
 		$this->status = isset( $r[0] ) ? $r[0] : 'null'; // ok|err
 		$this->output = $r[1];
 
-		Logger::info( "status [{$this->status}]" );
+		$this->app['logger']->info( "status [{$this->status}]" );
 
 		// Stop execution on error!
 		if ( in_array( $this->status, array( 'err', 'null' ) ) ) {
@@ -130,18 +161,19 @@ class Api
 
 	/**
 	 * Collect data from the query under following keys:
-	 * json - a JSON decoded object
-	 * extra - an additional suffix from the response
-	 * raw - raw string from the response
-	 * default - an array with all of the above
+	 * array/null -> (array) JSON decoded object
+	 * json -> (string) JSON object
+	 * extra -> (string) second line of response
+	 * raw -> (string) raw response
+	 * all -> (array) contains all the above
 	 *
-	 * @param string $key json|extra|raw
+	 * @param string $key array|json|extra|raw|null
 	 * @return mixed Requested data
 	 */
-	public function getData( string $key = 'all' )
+	public function getData( string $key = 'array' )
 	{
 		if ( 'raw' === $key ) {
-			return $this->output;
+			return $this->response;
 		}
 
 		$i = strrpos( $this->output, ']' );
@@ -153,24 +185,25 @@ class Api
 		$data1 = substr( $this->output, 0, $i );
 		$data2 = substr( $this->output, $i );
 
-		Logger::debug( 'json_decode: ' . $data1 );
-		Logger::debug( 'extra: ' . $data2 );
+		$this->app['logger']->debug( 'json_decode: ' . $data1 );
+		$this->app['logger']->debug( 'extra: ' . $data2 );
 
 		$json = json_decode( $data1 );
 		if ( null === $json ) {
-			trigger_error( 'Decoding JSON object failed', E_USER_ERROR );
+			trigger_error( 'Failed Decoding JSON object', E_USER_ERROR );
 		}
 
 		$all = array(
 		/* @formatter:off */
-			'json'  => $json,
+			'array' => $json,
 			'extra' => $data2,
-			'raw'   => $this->output,
+			'json'  => $this->output,
+			'raw'   => $this->response,
 		);
 		/* @formatter:on */
 
 		if ( array_key_exists( $key, $all ) ) {
-			return $all[ $key ];
+			return $all[$key];
 		}
 
 		return $all;
@@ -182,19 +215,19 @@ class Api
 	 * @param string $method Filmweb API method
 	 * @return string Query string
 	 */
-	private static function getQuery( string $method ): string
+	private function getQuery( string $method ): string
 	{
 		$met = $method . '\n'; // required ?!
 		$out = array(
 		/* @formatter:off */
 			'methods'   => $met,
-			'signature' => self::VER . ',' . md5( $met . self::APP . self::KEY ),
-			'version'   => self::VER,
-			'appId'     => self::APP,
+			'signature' => $this->app['cfg']['api_ver'] . ',' . md5( $met . $this->app['cfg']['api_app'] . $this->app['cfg']['api_key'] ),
+			'version'   => $this->app['cfg']['api_ver'],
+			'appId'     => $this->app['cfg']['api_app'],
 		);
 		/* @formatter:on */
 
-		Logger::debug( Utils::print_r( $out ) );
+		$this->app['logger']->debug( Utils::print_r( $out ) );
 
 		return http_build_query( $out );
 	}
@@ -230,35 +263,45 @@ class Api
 	}
 
 	/**
-	 * Sleep for [limit_usec] milisecconds between [limit_call] API calls
+	 * Sleep for [limit_usec] microseconds between each [limit_call] calls()
 	 */
 	private function slowdown(): void
 	{
-		if ( 0 == ++ $this->calls % $this->limit_call ) {
-			Logger::debug( "Current Api call #{$this->calls}. Slipping for {$this->limit_usec} microseconds..." );
-			usleep( $this->limit_usec );
-			$this->limit_total += $this->limit_usec;
+		if ( 0 == ++ $this->calls % $this->app['cfg']['limit_call'] ) {
+			$this->app['logger']->debug( "Current Api call #{$this->calls}. Sleeping for " . round( $this->app['cfg']['limit_usec'] / 1000000, 3 ) . " seconds..." );
+			usleep( $this->app['cfg']['limit_usec'] );
+			$this->sleep_total += $this->app['cfg']['limit_usec'];
 		}
 	}
 
 	/**
 	 * Get total sleep time between request call()'s
 	 *
-	 * @return float Total sleep time
+	 * @return float Total sleep time in fractional seconds
 	 */
 	public function getTotalSleep(): float
 	{
-		return $this->limit_total / 1000;
+		return $this->sleep_total / 1000000;
 	}
 
 	/**
-	 * Get total connection time in miliseconds
+	 * Get total connection time
 	 *
-	 * @return float Total connection time
+	 * @return float Total connection time in fractional seconds
 	 */
 	public function getTotalTime(): float
 	{
-		return $this->send->getTotalTime();
+		return $this->app['send']->getTotalTime();
+	}
+
+	/**
+	 * Get total calls counter
+	 *
+	 * @return int Total calls
+	 */
+	public function getTotalCalls(): int
+	{
+		return $this->calls;
 	}
 
 	/**
@@ -268,7 +311,7 @@ class Api
 	 */
 	public function getTotalDataSent(): int
 	{
-		return $this->send->getTotalDataSent();
+		return $this->app['send']->getTotalDataSent();
 	}
 
 	/**
@@ -278,6 +321,6 @@ class Api
 	 */
 	public function getTotalDataRecived(): int
 	{
-		return $this->send->getTotalDataRecived();
+		return $this->app['send']->getTotalDataRecived();
 	}
 }

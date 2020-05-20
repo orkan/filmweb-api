@@ -50,7 +50,7 @@ abstract class Transport
 	/**
 	 * Get total request time
 	 *
-	 * @return float Total request time
+	 * @return float Total request time in fractional seconds
 	 */
 	abstract protected function getTotalTime(): float;
 

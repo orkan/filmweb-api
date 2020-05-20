@@ -19,21 +19,22 @@ class Utils
 	 */
 	public static function formatBytes( int $bytes = 0 ): string
 	{
-		$sizes = array( 'bytes', 'kB', 'Mb', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' );
-		return $bytes ? (round( $bytes / pow( 1024, ($i = floor( log( $bytes, 1024 ) )) ), $i > 1 ? 2 : 1 ) . ' ' . $sizes[$i]) : '0 ' . $sizes[0];
+		$sizes = array( 'bytes', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' );
+		return $bytes ? ( round( $bytes / pow( 1024, ( $i = floor( log( $bytes, 1024 ) ) ) ), $i > 1 ? 2 : 1 ) . ' ' . $sizes[$i] ) : '0 ' . $sizes[0];
 	}
 
 	/**
 	 * Format time
 	 *
-	 * @param bool $fractions Add fractions part
-	 * @return string Time in format 1h 48m 32.697s
+	 * @param float $seconds Time in fractional seconds
+	 * @param bool $fractions Add fractions part?
+	 * @return string Time in format 18394d 16g 11m 41.589s
 	 */
-	public static function formatTime( float $microseconds, bool $fractions = true ): string
+	public static function formatTime( float $seconds, bool $fractions = true ): string
 	{
 		$d = $h = $m = 0;
-		$s = (int) $microseconds; // truncate fraction
-		$u = round( $microseconds - $s, 3 ); // truncate int and round
+		$s = (int) $seconds; // truncate fraction
+		$u = round( $seconds - $s, 3 ); // truncate int and round
 
 		if ( $s >= 86400 ) {
 			$d = floor( $s / 86400 );
@@ -48,12 +49,12 @@ class Utils
 			$s = floor( $s % 60 );
 		}
 		$f = $fractions ? $u + $s : $s;
-		return ($d ? "{$d}d " : '') . ($h ? "{$h}g " : '') . ($m ? "{$m}m " : '') . ($f ? "{$f}s" : '');
+		return trim( ( $d ? "{$d}d " : '' ) . ( $h ? "{$h}g " : '' ) . ( $m ? "{$m}m " : '' ) . ( $f ? "{$f}s" : '' ) );
 	}
 
 	/**
-	 * If the timestamp returned by filmweb is 3 digits too long?!? ...
-	 * Cut it!
+	 * Last 3 digits in timestamp string returned by filmweb are fractions
+	 * Cut it off!
 	 *
 	 * @param string $timestamp I.e. 1588365133974
 	 * @return string I.e. 1588365133
@@ -67,7 +68,7 @@ class Utils
 	/**
 	 * Format date acording to current time zone
 	 *
-	 * @param string $timestamp Must be string to allow over 32bit numbers (i.e. 1588365133974) returned by Filmweb
+	 * @param string $timestamp Must be string to allow over 32bit numbers (e.g. 1588365133974) returned by Filmweb
 	 * @param string $format Date format. Use constants i.e. DATE_COOKIE or string 'Y-m-d H:i:s.u e'
 	 * @param string $timezone
 	 * @return string Date string
@@ -75,7 +76,7 @@ class Utils
 	public static function formatDateTimeZone( string $timestamp, $format = DATE_RSS, $timezone = 'Europe/Berlin' ): string
 	{
 		$t = self::getTimestamp( $timestamp );
-		return (new \DateTime( null, (new \DateTimeZone( $timezone )) ))->setTimestamp( $t )->format( $format );
+		return ( new \DateTime( null, ( new \DateTimeZone( $timezone ) ) ) )->setTimestamp( $t )->format( $format );
 	}
 
 	/**
@@ -96,12 +97,18 @@ class Utils
 	 * STDOUT and echo both seems to work in CLI
 	 * STDERR is buffered and displays last
 	 *
+	 * @codeCoverageIgnore
+	 *
 	 * @param string $message
 	 * @param bool $is_error Choose the right I/O stream for outputing errors
 	 * @param string $codepage
 	 */
 	public static function print( string $message, bool $is_error = false, string $codepage = 'cp852' ): void
 	{
+		if ( defined( 'TESTING' ) ) {
+			return;
+		}
+
 		if ( 'cli' === php_sapi_name() ) {
 			fwrite( $is_error ? STDERR : STDOUT, iconv( 'utf-8', $codepage, $message ) );
 		} else {
@@ -111,6 +118,8 @@ class Utils
 
 	/**
 	 * Print message to STDERR
+	 *
+	 * @codeCoverageIgnore
 	 *
 	 * @param string $message
 	 * @param string $codepage

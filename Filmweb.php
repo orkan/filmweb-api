@@ -2,9 +2,8 @@
 
 namespace Orkan\Filmweb;
 
-use Orkan\Filmweb\Api\Api;
 use Orkan\Filmweb\Api\Method\login;
-use Orkan\Filmweb\Transport\Curl;
+use Pimple\Container;
 
 /**
  * Non-official API for Filmweb.pl
@@ -16,25 +15,34 @@ class Filmweb
 	const TITLE = 'Filmweb Api by Orkan';
 
 	/**
-	 * Options merged with defaults
-	 *
-	 * @var array[]
-	 */
-	private $cfg;
-
-	/**
-	 * Api instance
-	 *
-	 * @var Api
-	 */
-	private $api;
-
-	/**
 	 * Instance spawn time
 	 *
-	 * @var float
+	 * @var float microtime() at spawning time
 	 */
 	private $start_time = null;
+
+	/**
+	 * Save credentials from constructor
+	 *
+	 * @var string Login
+	 */
+	private $login;
+
+	/**
+	 * Save credentials from constructor
+	 *
+	 * @var string Password
+	 */
+	private $pass;
+
+	/**
+	 * Dependency Injection Container
+	 *
+	 * @see https://pimple.symfony.com/
+	 *
+	 * @var Container
+	 */
+	private $app;
 
 	/**
 	 * Initialize child objects: Transport & Api
@@ -42,53 +50,81 @@ class Filmweb
 	 *
 	 * @param string $login
 	 * @param string $pass
-	 * @param array $cfg Overrides for $this->cfg
+	 * @param array $cfg Overrides for $this->app['cfg']
 	 */
-	public function __construct( string $login, string $pass, array $cfg = [] )
+	public function __construct( string $login, string $pass, array $config = [] )
 	{
 		// Save start execution time
 		$this->getExectime();
 
-		$this->cfg = array_merge( array(
-			/* @formatter:off */
+		$this->login = $login;
+		$this->pass = $pass;
 
-			/* These must be set! */
-			'cli_codepage' => 'cp852',
-			'cookie_file'  => dirname(__FILE__) . DIRECTORY_SEPARATOR . "{$login}-cookie.txt",
-			'log_channel'  => self::TITLE,
-			'log_file'     => self::TITLE . '.log',
-			'log_timezone' => 'UTC', // 'UTC' @see https://www.php.net/manual/en/timezones.php
+		// Create Dependency Injection Container
+		$this->app = new Container();
 
-			/* Leave these for \Monolog defaults or define your own in $cfg */
-			'log_keep'     => 0,    // \Monolog\Handler\RotatingFileHandler->maxFiles
-			'log_datetime' => null, // 'Y-m-d\TH:i:s.uP'
-			'log_format'   => null, // "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+		// Merge configuration with defaults
+		$this->app['cfg'] = array_merge( $this->getDefaults(), $config );
 
-			/* Api call limiter */
-			'limit_call'   => 8,   // Calls between pauses
-			'limit_usec'   => 500, // Pause duration in microseconds
-		), $cfg);
-		/* @formatter:on */
-
+		// Set Error Handler as soon as possible! (DI property)
 		// @see $this->errorHandler()
-		set_error_handler( array( $this, 'errorHandler' ) );
+		$this->app['errorHandler'] = array( $this, 'errorHandler' );
+		set_error_handler( $this->app['errorHandler'] );
 
-		Logger::init( $this->cfg );
-		Logger::info( self::getTitle() ); // Introduce itself! :)
-
-		$transport = new Curl( array( 'cookie' => $this->cfg['cookie_file'] ) );
-		$this->api = new Api( $transport, $this->cfg );
-		$this->api->call( 'login', array( login::NICKNAME => $login, login::PASSWORD => $pass ) );
+		// Create application services
+		// @codeCoverageIgnoreStart
+		$this->app['logger'] = function ( $c ) {
+			return new $this->app['cfg']['logger']( $c );
+		};
+		$this->app['send'] = function ( $c ) {
+			return new $this->app['cfg']['tarnsport']( $c );
+		};
+		$this->app['request'] = function ( $c ) {
+			return new $this->app['cfg']['request']( $c );
+		};
+		$this->app['api'] = function ( $c ) {
+			return new $this->app['cfg']['api']( $c );
+		};
+		// @codeCoverageIgnoreEnd
 	}
 
 	/**
-	 * Save Api instance for later
+	 * Get default config
+	 *
+	 * @return array Default config
+	 */
+	private function getDefaults()
+	{
+		/* @formatter:off */
+		return array(
+			'cli_codepage' => 'cp852',
+			'cookie_file'  => dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'SESSION_ID',
+			'is_debug'     => false,
+
+			/* Services */
+			'api'       => 'Orkan\\Filmweb\\Api\\Api',
+			'tarnsport' => 'Orkan\\Filmweb\\Transport\\Curl',
+			'request'   => 'Orkan\\Filmweb\\Transport\\CurlRequest',
+			'logger'    => 'Orkan\\Filmweb\\Logger',
+		);
+		/* @formatter:on */
+	}
+
+	/**
+	 * Login to Filmweb
+	 * Return Api instance
 	 *
 	 * @return \Orkan\Filmweb\Api\Api
 	 */
-	public function getApi(): Api
+	public function getApi()
 	{
-		return $this->api;
+		// On first call to Api Login to filmweb.pl
+		if ( ! $this->app['api']->getTotalCalls() ) {
+			$this->app['logger']->info( self::getTitle() ); // Introduce itself! :)
+			$this->app['api']->call( 'login', array( login::NICKNAME => $this->login, login::PASSWORD => $this->pass ) );
+		}
+
+		return $this->app['api'];
 	}
 
 	/**
@@ -101,55 +137,54 @@ class Filmweb
 	 */
 	public function errorHandler( int $errno, string $errstr, string $errfile, int $errline ): bool
 	{
-		// Do not handle errors excluded from error_reporting() with ~ sign
-		if ( ! (error_reporting() & $errno) ) {
-			return false;
+		// Handle errors included in error_reporting() only
+		if ( error_reporting() & $errno ) {
+			$is_filmweb = ( E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE ) & $errno;
+			$msg = $is_filmweb ? 'Filmweb' : 'PHP';
+
+			switch ( $errno )
+			{
+				// @codeCoverageIgnoreStart
+				case E_ERROR:
+				case E_USER_ERROR:
+					$type = 'error';
+					break;
+
+				case E_WARNING:
+				case E_USER_WARNING:
+					$type = 'warning';
+					break;
+				// @codeCoverageIgnoreEnd
+
+				case E_NOTICE:
+				case E_USER_NOTICE:
+					$type = 'notice';
+					break;
+
+				default:
+					$type = 'unknown';
+					$msg .= " [$errno]";
+			}
+
+			$is_error = in_array( $type, array( 'error', 'warning' ) );
+
+			$msg = "$msg $type: $errstr in $errfile on line $errline\n";
+
+			// Print message to terminal in CLI mode, or echo it otherwise
+			Utils::print( $msg, $is_error, $this->app['cfg']['cli_codepage'] );
+
+			// Call appropriate Logger method type
+			$this->app['logger']->$type( $msg );
+
+			// Quit on error! Tip: Default PHP exit code is 255
+			if ( $is_error && ! defined( 'TESTING' ) ) {
+				// @codeCoverageIgnoreStart
+				exit( 1 );
+				// @codeCoverageIgnoreEnd
+			}
 		}
 
-		$is_filmweb = (E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE) & $errno;
-		$msg = $is_filmweb ? 'Filmweb' : 'PHP';
-
-		switch ( $errno )
-		{
-			case E_ERROR:
-			case E_USER_ERROR:
-				$type = 'error';
-				break;
-
-			case E_WARNING:
-			case E_USER_WARNING:
-				$type = 'warning';
-				break;
-
-			case E_NOTICE:
-			case E_USER_NOTICE:
-				$type = 'notice';
-				break;
-
-			default:
-				$type = 'unknown';
-				$msg .= " [$errno]";
-		}
-
-		$is_error = in_array( $type, array( 'error', 'warning' ) );
-
-		$msg = "$msg $type: $errstr in $errfile on line $errline\n";
-
-		// Print message to terminal in CLI mode, or echo it otherwise
-		Utils::print( $msg, $is_error, $this->cfg['cli_codepage'] );
-
-		// Call appropriate Logger method type
-		Logger::$type( $msg );
-
-		// Quit on error! Tip: Default PHP exit code is -1
-		if ( $is_error ) {
-			exit( 1 );
-		}
-
-		// Don't execute PHP internal error handler
-		// return true;
-
-		return false;
+		return false; // Don't execute PHP internal error handler
 	}
 
 	/**
@@ -164,9 +199,9 @@ class Filmweb
 	}
 
 	/**
-	 * Get execution time
+	 * Get time elapsed from spawning this instance
 	 *
-	 * @return float Microseconds passed since spawning this instance
+	 * @return float Elapsed time in fractional seconds
 	 */
 	public function getExecTime(): float
 	{
