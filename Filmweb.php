@@ -72,15 +72,20 @@ class Filmweb
 		set_error_handler( $this->app['errorHandler'] );
 
 		// Create application services
+		// @codeCoverageIgnoreStart
 		$this->app['logger'] = function ( $c ) {
 			return new $this->app['cfg']['logger']( $c );
 		};
 		$this->app['send'] = function ( $c ) {
 			return new $this->app['cfg']['tarnsport']( $c );
 		};
+		$this->app['request'] = function ( $c ) {
+			return new $this->app['cfg']['request']( $c );
+		};
 		$this->app['api'] = function ( $c ) {
 			return new $this->app['cfg']['api']( $c );
 		};
+		// @codeCoverageIgnoreEnd
 	}
 
 	/**
@@ -99,6 +104,7 @@ class Filmweb
 			/* Services */
 			'api'       => 'Orkan\\Filmweb\\Api\\Api',
 			'tarnsport' => 'Orkan\\Filmweb\\Transport\\Curl',
+			'request'   => 'Orkan\\Filmweb\\Transport\\CurlRequest',
 			'logger'    => 'Orkan\\Filmweb\\Logger',
 		);
 		/* @formatter:on */
@@ -131,55 +137,54 @@ class Filmweb
 	 */
 	public function errorHandler( int $errno, string $errstr, string $errfile, int $errline ): bool
 	{
-		// Do not handle errors excluded from error_reporting() with ~ sign
-		if ( ! ( error_reporting() & $errno ) ) {
-			return false;
+		// Handle errors included in error_reporting() only
+		if ( error_reporting() & $errno ) {
+			$is_filmweb = ( E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE ) & $errno;
+			$msg = $is_filmweb ? 'Filmweb' : 'PHP';
+
+			switch ( $errno )
+			{
+				// @codeCoverageIgnoreStart
+				case E_ERROR:
+				case E_USER_ERROR:
+					$type = 'error';
+					break;
+
+				case E_WARNING:
+				case E_USER_WARNING:
+					$type = 'warning';
+					break;
+				// @codeCoverageIgnoreEnd
+
+				case E_NOTICE:
+				case E_USER_NOTICE:
+					$type = 'notice';
+					break;
+
+				default:
+					$type = 'unknown';
+					$msg .= " [$errno]";
+			}
+
+			$is_error = in_array( $type, array( 'error', 'warning' ) );
+
+			$msg = "$msg $type: $errstr in $errfile on line $errline\n";
+
+			// Print message to terminal in CLI mode, or echo it otherwise
+			Utils::print( $msg, $is_error, $this->app['cfg']['cli_codepage'] );
+
+			// Call appropriate Logger method type
+			$this->app['logger']->$type( $msg );
+
+			// Quit on error! Tip: Default PHP exit code is 255
+			if ( $is_error ) {
+				// @codeCoverageIgnoreStart
+				exit( 1 );
+				// @codeCoverageIgnoreEnd
+			}
 		}
 
-		$is_filmweb = ( E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE ) & $errno;
-		$msg = $is_filmweb ? 'Filmweb' : 'PHP';
-
-		switch ( $errno )
-		{
-			case E_ERROR:
-			case E_USER_ERROR:
-				$type = 'error';
-				break;
-
-			case E_WARNING:
-			case E_USER_WARNING:
-				$type = 'warning';
-				break;
-
-			case E_NOTICE:
-			case E_USER_NOTICE:
-				$type = 'notice';
-				break;
-
-			default:
-				$type = 'unknown';
-				$msg .= " [$errno]";
-		}
-
-		$is_error = in_array( $type, array( 'error', 'warning' ) );
-
-		$msg = "$msg $type: $errstr in $errfile on line $errline\n";
-
-		// Print message to terminal in CLI mode, or echo it otherwise
-		Utils::print( $msg, $is_error, $this->app['cfg']['cli_codepage'] );
-
-		// Call appropriate Logger method type
-		$this->app['logger']->$type( $msg );
-
-		// Quit on error! Tip: Default PHP exit code is 255
-		if ( $is_error ) {
-			exit( 1 );
-		}
-
-		// Don't execute PHP internal error handler
-		// return true;
-
-		return false;
+		return false; // Don't execute PHP internal error handler
 	}
 
 	/**

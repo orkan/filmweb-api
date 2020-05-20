@@ -61,8 +61,8 @@ class Curl extends Transport
 	 */
 	public function get( string $url, string $query ): string
 	{
-		$options = array(
 		/* @formatter:off */
+		$options = array(
 			CURLOPT_URL => $url . '?' . $query,
 		);
 		/* @formatter:on */
@@ -79,8 +79,8 @@ class Curl extends Transport
 	 */
 	public function post( string $url, string $query ): string
 	{
-		$options = array(
 		/* @formatter:off */
+		$options = array(
 			CURLOPT_URL        => $url,
 			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => urldecode( $query ),
@@ -99,11 +99,11 @@ class Curl extends Transport
 	 */
 	private function exec( array $options ): string
 	{
-		$request = curl_init();
-		curl_setopt_array( $request, $options + $this->defaults );
-		$response = curl_exec( $request );
-		$info = curl_getinfo( $request );
-		curl_close( $request );
+		$this->app['request']->init();
+		$this->app['request']->setOptArray( $options + $this->defaults );
+		$response = $this->app['request']->exec();
+		$info = $this->app['request']->getInfo();
+		$this->app['request']->close();
 
 		// Grab some statistics
 		// @see https://www.php.net/manual/en/function.curl-getinfo.php

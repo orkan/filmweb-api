@@ -96,6 +96,7 @@ class Utils
 	 * Notes:
 	 * STDOUT and echo both seems to work in CLI
 	 * STDERR is buffered and displays last
+	 * @codeCoverageIgnore
 	 *
 	 * @param string $message
 	 * @param bool $is_error Choose the right I/O stream for outputing errors
@@ -112,6 +113,7 @@ class Utils
 
 	/**
 	 * Print message to STDERR
+	 * @codeCoverageIgnore
 	 *
 	 * @param string $message
 	 * @param string $codepage
