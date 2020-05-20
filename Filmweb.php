@@ -177,7 +177,7 @@ class Filmweb
 			$this->app['logger']->$type( $msg );
 
 			// Quit on error! Tip: Default PHP exit code is 255
-			if ( $is_error ) {
+			if ( $is_error && ! defined( 'TESTING' ) ) {
 				// @codeCoverageIgnoreStart
 				exit( 1 );
 				// @codeCoverageIgnoreEnd

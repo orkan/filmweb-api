@@ -96,6 +96,7 @@ class Utils
 	 * Notes:
 	 * STDOUT and echo both seems to work in CLI
 	 * STDERR is buffered and displays last
+	 *
 	 * @codeCoverageIgnore
 	 *
 	 * @param string $message
@@ -104,6 +105,10 @@ class Utils
 	 */
 	public static function print( string $message, bool $is_error = false, string $codepage = 'cp852' ): void
 	{
+		if ( defined( 'TESTING' ) ) {
+			return;
+		}
+
 		if ( 'cli' === php_sapi_name() ) {
 			fwrite( $is_error ? STDERR : STDOUT, iconv( 'utf-8', $codepage, $message ) );
 		} else {
@@ -113,6 +118,7 @@ class Utils
 
 	/**
 	 * Print message to STDERR
+	 *
 	 * @codeCoverageIgnore
 	 *
 	 * @param string $message
