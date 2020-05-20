@@ -42,6 +42,6 @@ final class getUserFilmVotes extends Method
 	 */
 	public function format( array $args ): string
 	{
-		return sprintf( $this . ' [%u, 1]', $args[ self::USERID ] );
+		return sprintf( $this . ' [%u, 1]', $args[self::USERID] );
 	}
 }

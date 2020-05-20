@@ -7,7 +7,7 @@ namespace Orkan\Filmweb\Api\Method;
  *
  * @author Orkan
  */
-class login extends Method
+final class login extends Method
 {
 	/**
 	 * Send method
