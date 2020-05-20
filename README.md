@@ -1,4 +1,4 @@
-![repository-open-graph-template6d](https://user-images.githubusercontent.com/129182/81674511-9ddb2980-944d-11ea-9b5b-52ebef355ef7.jpg)
+![repository-open-graph-template7](https://user-images.githubusercontent.com/129182/82464654-9e636800-9abe-11ea-8946-ab7e525469f1.jpg)
 
 # Filmweb.pl API 
 Non-official API for Filmweb.pl
