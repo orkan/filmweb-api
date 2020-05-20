@@ -12,8 +12,8 @@ use Pimple\Container;
  */
 class Curl extends Transport
 {
-	private $defaults = array(
 	/* @formatter:off */
+	private $defaults = array(
 		CURLOPT_USERAGENT      => self::USERAGENT,
 		CURLOPT_CONNECTTIMEOUT => self::CONNECTTIMEOUT,
 		CURLOPT_TIMEOUT        => self::TIMEOUT,

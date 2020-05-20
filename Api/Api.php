@@ -161,18 +161,19 @@ class Api
 
 	/**
 	 * Collect data from the query under following keys:
-	 * json - a JSON decoded object
-	 * extra - an additional suffix from the response
-	 * raw - raw string from the response
-	 * default - an array with all of the above
+	 * array - JSON decoded object
+	 * json - JSON object
+	 * extra - second line of response
+	 * raw - raw response
+	 * all/null - an array with all of the above
 	 *
-	 * @param string $key json|extra|raw
+	 * @param string $key array|json|extra|raw|null
 	 * @return mixed Requested data
 	 */
 	public function getData( string $key = 'all' )
 	{
 		if ( 'raw' === $key ) {
-			return $this->output;
+			return $this->response;
 		}
 
 		$i = strrpos( $this->output, ']' );
@@ -189,7 +190,7 @@ class Api
 
 		$json = json_decode( $data1 );
 		if ( null === $json ) {
-			trigger_error( 'Decoding JSON object failed', E_USER_ERROR );
+			trigger_error( 'Failed Decoding JSON object', E_USER_ERROR );
 		}
 
 		$all = array(
