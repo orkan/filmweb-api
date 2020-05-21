@@ -34,7 +34,7 @@ class Utils
 	{
 		$d = $h = $m = 0;
 		$s = (int) $seconds; // truncate fraction
-		$u = round( $seconds - $s, 3 ); // truncate int and round
+		$u = $fractions ? round( $seconds - $s, 3 ) : 0; // truncate int and round
 
 		if ( $s >= 86400 ) {
 			$d = floor( $s / 86400 );
@@ -48,8 +48,8 @@ class Utils
 			$m = floor( $s / 60 );
 			$s = floor( $s % 60 );
 		}
-		$f = $fractions ? $u + $s : $s;
-		return trim( ( $d ? "{$d}d " : '' ) . ( $h ? "{$h}g " : '' ) . ( $m ? "{$m}m " : '' ) . ( $f ? "{$f}s" : '' ) );
+		$s = $s + $u;
+		return trim( ( $d ? "{$d}d " : '' ) . ( $h ? "{$h}g " : '' ) . ( $m ? "{$m}m " : '' ) . "{$s}s" );
 	}
 
 	/**
