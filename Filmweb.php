@@ -128,6 +128,16 @@ class Filmweb
 	}
 
 	/**
+	 * Return Logger instance
+	 *
+	 * @return \Orkan\Filmweb\Logger
+	 */
+	public function getLogger()
+	{
+		return $this->app['logger'];
+	}
+
+	/**
 	 * Callback for trigger_error()
 	 *
 	 * @param int $errno
