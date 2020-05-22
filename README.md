@@ -3,8 +3,9 @@
 # Filmweb.pl API 
 Non-official API for Filmweb.pl
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/orkan/filmweb-api.svg?style=flat-square)](https://packagist.org/packages/orkan/filmweb-api)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg?style=flat-square)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg)](https://php.net/)
+[![Latest Stable Version](https://img.shields.io/packagist/v/orkan/filmweb-api.svg)](https://packagist.org/packages/orkan/filmweb-api)
+![API Methods progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/orkan/filmweb-api/badges/.badges/api_methods/badge.json)
 
 * Highly configurable via an external configuration file
 * Advanced PHP error handling
