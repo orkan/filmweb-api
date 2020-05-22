@@ -105,6 +105,12 @@ class Curl extends Transport
 		$info = $this->app['request']->getInfo();
 		$this->app['request']->close();
 
+		if ( false === $info ) {
+			trigger_error( 'curl_getinfo() failed', E_USER_WARNING );
+		} else {
+			$this->app['logger']->debug( 'curl_getinfo: ' . Utils::print_r( $info ) );
+		}
+
 		// Grab some statistics
 		// @see https://www.php.net/manual/en/function.curl-getinfo.php
 		$this->total_time += $info['total_time']; // float, in fractional seconds

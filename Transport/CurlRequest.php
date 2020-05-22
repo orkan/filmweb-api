@@ -7,7 +7,6 @@ namespace Orkan\Filmweb\Transport;
  *
  * @see https://stackoverflow.com/questions/7911535/how-to-unit-test-curl-call-in-php
  * @author Orkan
- *
  */
 class CurlRequest
 {
@@ -33,8 +32,20 @@ class CurlRequest
 		return curl_exec( $this->handle );
 	}
 
-	public function getInfo( $opt = null )
+	/**
+	 * Get information regarding a specific transfer
+	 * Note:
+	 * Cannot use curl_getinfo( $this->handle, false|0|null ) to return an associative array.
+	 * The second parameter must be excluded explicitly
+	 */
+	public function getInfo( $opt = false )
 	{
+		if ( false === $opt ) {
+			// returns an associative array with all elements
+			return curl_getinfo( $this->handle );
+		}
+
+		// returns a given $opt value
 		return curl_getinfo( $this->handle, $opt );
 	}
 
