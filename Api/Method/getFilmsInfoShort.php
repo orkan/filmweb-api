@@ -7,7 +7,7 @@ namespace Orkan\Filmweb\Api\Method;
  *
  * @author Orkan
  */
-final class getFilmPersons extends Method
+final class getFilmsInfoShort extends Method
 {
 	/**
 	 * Send method
@@ -20,19 +20,18 @@ final class getFilmPersons extends Method
 	/**
 	 * Query array keys
 	 */
-	const ID     = 0;
-	const ROLE   = 1; // @see: Orkan\Filmweb\Api\Method\PersonRole
-	const OFFSET = 2;
-	const LIMIT  = 3;
+	const IDS = 0; // Array of film id's
 
 	/**
 	 * Response array keys
 	 */
-	const PERSON_ID      = 0;
-	const CHARACTER_NAME = 1;
-	const PERSON_ATTR    = 2;
-	const PERSON_NAME    = 3;
-	const PERSON_IMAGE   = 4;
+	const FILM_TITLE    = 0;
+	const FILM_YEAR     = 1;
+	const FILM_RATE     = 2;
+	const FILM_VOTES    = 3;
+	const FILM_DURATION = 4;
+	const FILM_IMAGE    = 5;
+	const FILM_ID       = 6;
 
 	/**
 	 * Format method string
@@ -43,8 +42,10 @@ final class getFilmPersons extends Method
 	 */
 	public function format( array $args ): string
 	{
-		$cfg = $this->getDefaults( $args );
+		if ( ! is_array( $args[self::IDS] ) ) {
+			trigger_error( $this . ': Argument must be an array', E_USER_WARNING );
+		}
 
-		return sprintf( $this . ' [%u, %u, %u, %u]', $args[self::ID], $args[self::ROLE], $cfg['offset'], $cfg['limit'] );
+		return sprintf( $this . ' [%s]', json_encode( $args[self::IDS] ) );
 	}
 }

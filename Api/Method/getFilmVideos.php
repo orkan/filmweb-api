@@ -7,7 +7,7 @@ namespace Orkan\Filmweb\Api\Method;
  *
  * @author Orkan
  */
-final class getFilmPersons extends Method
+final class getFilmVideos extends Method
 {
 	/**
 	 * Send method
@@ -21,18 +21,15 @@ final class getFilmPersons extends Method
 	 * Query array keys
 	 */
 	const ID     = 0;
-	const ROLE   = 1; // @see: Orkan\Filmweb\Api\Method\PersonRole
-	const OFFSET = 2;
-	const LIMIT  = 3;
+	const OFFSET = 1;
+	const LIMIT  = 2;
 
 	/**
 	 * Response array keys
 	 */
-	const PERSON_ID      = 0;
-	const CHARACTER_NAME = 1;
-	const PERSON_ATTR    = 2;
-	const PERSON_NAME    = 3;
-	const PERSON_IMAGE   = 4;
+	const THUMB1 = 0;
+	const THUMB2 = 1;
+	const VIDEO  = 2;
 
 	/**
 	 * Format method string
@@ -45,6 +42,6 @@ final class getFilmPersons extends Method
 	{
 		$cfg = $this->getDefaults( $args );
 
-		return sprintf( $this . ' [%u, %u, %u, %u]', $args[self::ID], $args[self::ROLE], $cfg['offset'], $cfg['limit'] );
+		return sprintf( $this . ' [%u, %u, %u]', $args[self::ID], $cfg['offset'], $cfg['limit'] );
 	}
 }

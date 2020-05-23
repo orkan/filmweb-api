@@ -20,11 +20,11 @@ final class isLoggedUser extends Method
 	/**
 	 * Response array keys
 	 */
-	const NICK   = 0;
-	const AVATAR = 1;
-	const NAME   = 2;
-	const USERID = 3;
-	const GENDER = 4;
+	const USER_NICK   = 0;
+	const USER_AVATAR = 1;
+	const USER_NAME   = 2;
+	const USER_ID     = 3;
+	const USER_GENDER = 4;
 
 	/**
 	 * Format method string

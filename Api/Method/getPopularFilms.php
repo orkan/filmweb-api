@@ -7,7 +7,7 @@ namespace Orkan\Filmweb\Api\Method;
  *
  * @author Orkan
  */
-final class getUserFilmVotes extends Method
+final class getPopularFilms extends Method
 {
 	/**
 	 * Send method
@@ -18,19 +18,15 @@ final class getUserFilmVotes extends Method
 	const TYPE = 'get';
 
 	/**
-	 * Query array keys
-	 */
-	const ID = 0;
-
-	/**
 	 * Response array keys
 	 */
-	const FILM_ID      = 0;
-	const FILM_DATE    = 1;
-	const FILM_RATE    = 2;
-	const FILM_FAV     = 3;
-	const FILM_COMMENT = 4;
-	const FILM_TYPE    = 5; // @see Orkan\Filmweb\Api\Method\FilmType
+	const TITLE    = 0;
+	const YEAR     = 1;
+	const RATE     = 2;
+	const VOTES    = 3;
+	const DURATION = 4;
+	const IMAGE    = 5;
+	const FILM_ID  = 6;
 
 	/**
 	 * Format method string
@@ -41,6 +37,6 @@ final class getUserFilmVotes extends Method
 	 */
 	public function format( array $args ): string
 	{
-		return sprintf( $this . ' [%u, 1]', $args[self::ID] );
+		return (string) $this;
 	}
 }
