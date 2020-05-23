@@ -20,7 +20,7 @@ final class getFilmInfoFull extends Method
 	/**
 	 * Query array keys
 	 */
-	const FILMID = 0;
+	const ID = 0;
 
 	/**
 	 * Response array keys
@@ -55,6 +55,6 @@ final class getFilmInfoFull extends Method
 	 */
 	public function format( array $args ): string
 	{
-		return sprintf( $this . ' [%u]', $args[self::FILMID] );
+		return sprintf( $this . ' [%u]', $args[self::ID] );
 	}
 }

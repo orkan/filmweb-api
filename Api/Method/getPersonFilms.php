@@ -7,7 +7,7 @@ namespace Orkan\Filmweb\Api\Method;
  *
  * @author Orkan
  */
-final class getFilmPersons extends Method
+final class getPersonFilms extends Method
 {
 	/**
 	 * Send method
@@ -20,19 +20,22 @@ final class getFilmPersons extends Method
 	/**
 	 * Query array keys
 	 */
-	const ID     = 0;
-	const ROLE   = 1; // @see: Orkan\Filmweb\Api\Method\PersonRole
-	const OFFSET = 2;
-	const LIMIT  = 3;
+	const ID      = 0;
+	const IS_TYPE = 1; // @see Orkan\Filmweb\Api\Method\FilmType
+	const IS_ROLE = 2; // @see Orkan\Filmweb\Api\Method\PersonRole
+	const OFFSET  = 3;
+	const LIMIT   = 4;
 
 	/**
 	 * Response array keys
 	 */
-	const PERSON_ID      = 0;
+	const FILM_ID        = 0;
 	const CHARACTER_NAME = 1;
-	const PERSON_ATTR    = 2;
-	const PERSON_NAME    = 3;
-	const PERSON_IMAGE   = 4;
+	const FILM_TITLE_PL  = 2;
+	const FILM_IMAGE     = 3;
+	const FILM_YEAR      = 4;
+	const FILM_EXTRA     = 5;
+	const FILM_TITLE     = 6;
 
 	/**
 	 * Format method string
@@ -45,6 +48,6 @@ final class getFilmPersons extends Method
 	{
 		$cfg = $this->getDefaults( $args );
 
-		return sprintf( $this . ' [%u, %u, %u, %u]', $args[self::ID], $args[self::ROLE], $cfg['offset'], $cfg['limit'] );
+		return sprintf( "$this [%u, %u, %u, %u, %u]", $args[self::ID], $args[self::IS_TYPE], $args[self::IS_ROLE], $cfg['offset'], $cfg['limit'] );
 	}
 }

@@ -20,15 +20,15 @@ final class getUserFilmsWantToSee extends Method
 	/**
 	 * Query array keys
 	 */
-	const USERID = 0;
+	const ID = 0;
 
 	/**
 	 * Response array keys
 	 */
-	const UPDATED = 0;
-	const FILMID  = 0;
-	const DATE    = 1;
-	const LEVEL   = 2;
+	const FILM_ID    = 0;
+	const FILM_ADDED = 1;
+	const FILM_LEVEL = 2;
+	const UNKNOWN3   = 3;
 
 	/**
 	 * Format method string
@@ -39,6 +39,6 @@ final class getUserFilmsWantToSee extends Method
 	 */
 	public function format( array $args ): string
 	{
-		return sprintf( $this . ' [%u, 1]', $args[self::USERID] );
+		return sprintf( $this . ' [%u, 1]', $args[self::ID] );
 	}
 }
