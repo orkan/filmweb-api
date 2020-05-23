@@ -11,7 +11,8 @@ $data = array(
 
 $done    = count( glob( 'done/*.*' ) );
 $pending = count( glob( 'pending/*.*' ) );
+$unknown = count( glob( 'unknown/*.*' ) );
 
-$data['message'] = sprintf( $data['message'], $done, $done + $pending );
+$data['message'] = sprintf( $data['message'], $done, $done + $pending + $unknown );
 
 file_put_contents('badge.json', json_encode( $data ));
