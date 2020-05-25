@@ -1,0 +1,42 @@
+name: PHPUnit Tests
+
+#on: [push]
+on:
+  push:
+    branches:
+    - master
+    
+jobs:
+  unit-tests:
+    name: Checkout & test
+    runs-on: ubuntu-latest
+    steps:
+    
+    - name: Checkout filmweb-api
+      uses: actions/checkout@v2
+      with:
+        path: src
+        
+    - name: Checkout filmweb-tests
+      uses: actions/checkout@v2
+      with:
+        repository: orkan/filmweb-tests
+        path: tests
+        
+    - name: Install Composer
+      run: |
+        cp src/.github/workflows/tests.composer.json composer.json
+        composer install
+        
+    - name: Install PHPUnit
+      run: composer -n require "phpunit/phpunit"
+      
+    - name: Run tests...
+      working-directory: tests/_cmd
+      run: ../../vendor/bin/phpunit
+      
+    - name: Save artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: composer.json
+        path: composer.json
