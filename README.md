@@ -5,7 +5,7 @@ Non-official API for Filmweb.pl
 
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg)](https://php.net/)
 [![Latest Stable Version](https://img.shields.io/packagist/v/orkan/filmweb-api.svg)](https://packagist.org/packages/orkan/filmweb-api)
-[![API Methods progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/orkan/filmweb-api/badges/.badges/api_methods/badge.json)](https://github.com/orkan/filmweb-api/tree/badges/.badges/api_methods)
+[![API Methods progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/orkan/filmweb-api/badges/.github/badges/api_methods/badge.json)](https://github.com/orkan/filmweb-api/tree/badges/.github/badges/api_methods)
 ![PHPUnit Tests](https://github.com/orkan/filmweb-api/workflows/PHPUnit%20Tests/badge.svg)
 
 * Highly configurable via an external configuration file
