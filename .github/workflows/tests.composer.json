@@ -1,0 +1,16 @@
+{
+	"autoload" : {
+		"psr-4" : {
+			"Orkan\\Filmweb\\" : "src"
+		}
+	},
+	"require" : {
+		"monolog/monolog" : "^2.0",
+		"pimple/pimple" : "~3.0"
+	},
+	"autoload-dev" : {
+		"psr-4" : {
+			"Orkan\\Filmweb\\Tests\\" : "tests"
+		}
+	}
+}
