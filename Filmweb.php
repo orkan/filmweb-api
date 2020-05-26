@@ -106,6 +106,9 @@ class Filmweb
 			'tarnsport' => 'Orkan\\Filmweb\\Transport\\Curl',
 			'request'   => 'Orkan\\Filmweb\\Transport\\CurlRequest',
 			'logger'    => 'Orkan\\Filmweb\\Logger',
+
+			/* Hide sensitive log data */
+			'logger_mask' => array( 'search' => array( $this->pass ), 'replace' => array( '***' ) ),
 		);
 		/* @formatter:on */
 	}
