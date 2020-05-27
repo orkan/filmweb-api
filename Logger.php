@@ -41,6 +41,16 @@ class Logger
 		$logstream->setFormatter( $logformat );
 		$this->logger->pushHandler( $logstream ); // DEBUG = 100; log everything, INFO = 200; log above >= 200
 		$this->logger->setTimezone( new \DateTimeZone( $cfg['log_timezone'] ) );
+
+		// Remove sensitive data from log
+		if ( isset( $this->app['cfg']['logger_mask'] ) ) {
+			$search = $this->app['cfg']['logger_mask']['search'];
+			$replace = $this->app['cfg']['logger_mask']['replace'];
+			$this->logger->pushProcessor( function ( $entry ) use ($search, $replace ) {
+				$entry['message'] = str_replace( $search, $replace, $entry['message'] );
+				return $entry;
+			} );
+		}
 	}
 
 	/**
