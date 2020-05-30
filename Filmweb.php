@@ -22,14 +22,14 @@ class Filmweb
 	private $start_time = null;
 
 	/**
-	 * Save credentials from constructor
+	 * Saved credentials from constructor
 	 *
 	 * @var string Login
 	 */
 	private $login;
 
 	/**
-	 * Save credentials from constructor
+	 * Saved credentials from constructor
 	 *
 	 * @var string Password
 	 */
@@ -45,8 +45,7 @@ class Filmweb
 	private $app;
 
 	/**
-	 * Initialize child objects: Transport & Api
-	 * Login to Filmweb
+	 * Initialize services (LAZY)
 	 *
 	 * @param string $login
 	 * @param string $pass
@@ -66,7 +65,7 @@ class Filmweb
 		// Merge configuration with defaults
 		$this->app['cfg'] = array_merge( $this->getDefaults(), $config );
 
-		// Set Error Handler as soon as possible! (DI property)
+		// Set Error Handler as soon as possible!
 		// @see $this->errorHandler()
 		$this->app['errorHandler'] = array( $this, 'errorHandler' );
 		set_error_handler( $this->app['errorHandler'] );
@@ -90,6 +89,9 @@ class Filmweb
 
 	/**
 	 * Get default config
+	 * Tip:
+	 * See also other services for default config values.
+	 * All these can be replaced by array passed to constuctor
 	 *
 	 * @return array Default config
 	 */
@@ -114,7 +116,7 @@ class Filmweb
 	}
 
 	/**
-	 * Login to Filmweb
+	 * Login to Filmweb on first call only, then use cookie on subsequent calls
 	 * Return Api instance
 	 *
 	 * @return \Orkan\Filmweb\Api\Api
@@ -141,7 +143,7 @@ class Filmweb
 	}
 
 	/**
-	 * Callback for trigger_error()
+	 * PHP Error callback for trigger_error()
 	 *
 	 * @param int $errno
 	 * @param string $errstr
@@ -197,7 +199,8 @@ class Filmweb
 			}
 		}
 
-		return false; // Don't execute PHP internal error handler
+		// Don't execute PHP internal error handler
+		return false;
 	}
 
 	/**
