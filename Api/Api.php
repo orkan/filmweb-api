@@ -121,7 +121,7 @@ class Api
 	public function call( string $method, array $args = [] ): string
 	{
 		// Clear garbage after last method...
-		$this->request = $this->response = $this->status = null;
+		$this->request = $this->response = $this->status = '';
 
 		// Reduce the frequency of API calls
 		$this->slowdown();
@@ -148,13 +148,13 @@ class Api
 			trigger_error( 'Wrong response format', E_USER_ERROR );
 		}
 
-		$this->status = isset( $r[0] ) ? $r[0] : null; // ok|err
-		$this->output = isset( $r[1] ) ? $r[1] : null;
+		$this->status = isset( $r[0] ) ? $r[0] : ''; // ok|err
+		$this->output = isset( $r[1] ) ? $r[1] : '';
 
 		$this->app['logger']->info( "status [{$this->status}]" );
 
 		// Stop execution on error!
-		if ( in_array( $this->status, array( 'err', null ) ) ) {
+		if ( 'ok' !== $this->status ) {
 			trigger_error( $this->output, E_USER_ERROR );
 		}
 
