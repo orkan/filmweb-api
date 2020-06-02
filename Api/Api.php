@@ -151,9 +151,14 @@ class Api
 
 		$this->app['logger']->info( "status [{$this->status}]" );
 
-		// Stop execution on error!
+		// Check response status
 		if ( 'ok' !== $this->status ) {
 			trigger_error( $this->output, E_USER_ERROR );
+		}
+
+		// Check response exception
+		if ( 'exc' === substr( $this->output, 0, 3 ) ) {
+			trigger_error( substr( $this->output, 4 ), E_USER_WARNING );
 		}
 
 		return $this->getStatus();

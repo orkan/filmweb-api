@@ -181,8 +181,6 @@ class Filmweb
 					$msg .= " [$errno]";
 			}
 
-			$is_error = in_array( $type, array( 'error', 'warning' ) );
-
 			$msg = "$msg $type: $errstr in $errfile on line $errline\n";
 
 			// Print message to terminal in CLI mode, or echo it otherwise
