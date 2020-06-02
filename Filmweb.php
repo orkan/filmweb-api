@@ -99,6 +99,7 @@ class Filmweb
 		return array(
 			'cli_codepage' => 'cp852',
 			'cookie_file'  => dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'SESSION_ID',
+			'exit_on'      => E_ERROR | E_USER_ERROR,
 			'is_debug'     => false,
 
 			/* Services */
@@ -153,6 +154,7 @@ class Filmweb
 		// Handle errors included in error_reporting() only
 		if ( error_reporting() & $errno ) {
 			$is_filmweb = ( E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE ) & $errno;
+			$is_error = ( E_ERROR | E_USER_ERROR ) & $errno;
 			$msg = $is_filmweb ? 'Filmweb' : 'PHP';
 
 			switch ( $errno )
@@ -189,8 +191,10 @@ class Filmweb
 			// Call appropriate Logger method type
 			$this->app['logger']->$type( $msg );
 
-			// Quit on error! Tip: Default PHP exit code is 255
-			if ( $is_error && ! defined( 'TESTING' ) ) {
+			// Quit on defined error level
+			// Use this to prevent exiting on unit testing
+			// @tip Default PHP exit code is 255
+			if ( $this->app['cfg']['exit_on'] & $errno ) {
 				// @codeCoverageIgnoreStart
 				exit( 1 );
 				// @codeCoverageIgnoreEnd
