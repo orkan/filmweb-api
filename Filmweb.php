@@ -181,7 +181,13 @@ class Filmweb
 					$msg .= " [$errno]";
 			}
 
-			$msg = "$msg $type: $errstr in $errfile on line $errline\n";
+			$msg = "$msg $type: $errstr";
+
+			if ( $this->app['cfg']['is_debug'] ) {
+				$msg .= " in $errfile on line $errline";
+			}
+
+			$msg .= "\n";
 
 			// Print message to terminal in CLI mode, or echo it otherwise
 			Utils::print( $msg, $is_error, $this->app['cfg']['cli_codepage'] );
