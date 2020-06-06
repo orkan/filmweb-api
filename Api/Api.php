@@ -14,6 +14,8 @@ class Api
 {
 	/**
 	 * Slowdown() statistics
+	 *
+	 * @see $this->slowdown()
 	 */
 	private $calls = 0; // Current call no.
 	private $sleep_total = 0; // Total sleep time in microseconds
@@ -83,14 +85,15 @@ class Api
 			'api_app' => 'android',
 			'api_key' => 'qjcGhW2JnvGT9dfCt3uT_jozR3s',
 
-			'limit_call' => 8, // usleep() after reaching this limit of call()'s
-			'limit_usec' => 300000, // In microseconds! 1s == 1 000 000 us
+			/* @see $this->slowdown() */
+			'limit_call' => 8, // Make usleep() after reaching this limit of calls
+			'limit_usec' => 300000, // Sleep time in microseconds (1 000 000 us == 1s)
 		);
 		/* @formatter:on */
 	}
 
 	/**
-	 * Retrive API method from continer or create one
+	 * Get API method from continer or create one
 	 *
 	 * @param string $method API method name
 	 * @return API method instance
@@ -110,7 +113,7 @@ class Api
 	}
 
 	/**
-	 * A reusable main method, to help invoke multiple Filmweb API methods within one login
+	 * Reusable API caller used to invoke multiple Filmweb API methods within one login sesion
 	 *
 	 * @param string $method Filmweb API method
 	 * @param array $args Arguments to send
@@ -118,8 +121,8 @@ class Api
 	 */
 	public function call( string $method, array $args = [] ): string
 	{
-		// Clear the last method call leftovers...
-		$this->request = $this->response = $this->status = $this->output = null;
+		// Clear garbage after last method...
+		$this->request = $this->response = $this->status = '';
 
 		// Reduce the frequency of API calls
 		$this->slowdown();
@@ -141,27 +144,32 @@ class Api
 		$this->app['logger']->debug( 'Response: ' . json_encode( $this->response ) );
 
 		$r = explode( "\n", $this->response );
+		$this->status = isset( $r[0] ) ? $r[0] : ''; // ok|err
+		$this->output = isset( $r[1] ) ? $r[1] : '';
 
 		if ( count( $r ) < 2 ) {
 			trigger_error( 'Wrong response format', E_USER_ERROR );
+			$this->status = 'err';
 		}
 
-		$this->status = isset( $r[0] ) ? $r[0] : 'null'; // ok|err
-		$this->output = $r[1];
-
-		$this->app['logger']->info( "status [{$this->status}]" );
-
-		// Stop execution on error!
-		if ( in_array( $this->status, array( 'err', 'null' ) ) ) {
+		// Check response status
+		if ( 'ok' !== $this->status ) {
 			trigger_error( $this->output, E_USER_ERROR );
 		}
 
-		return $this->getStatus();
+		// Check response exception
+		if ( 'exc' === substr( $this->output, 0, 3 ) ) {
+			trigger_error( substr( $this->output, 4 ), E_USER_WARNING );
+			$this->status = 'exc';
+		}
+
+		$this->app['logger']->info( "status [{$this->status}]" );
+		return $this->status;
 	}
 
 	/**
-	 * Collect data from the query under following keys:
-	 * array/null -> (array) JSON decoded object
+	 * Build data array containing the following keys:
+	 * array -> (array) JSON decoded object (default)
 	 * json -> (string) JSON object
 	 * extra -> (string) second line of response
 	 * raw -> (string) raw response
@@ -178,19 +186,21 @@ class Api
 
 		$i = strrpos( $this->output, ']' );
 		if ( false === $i || '[' !== $this->output[0] ) {
-			trigger_error( 'No JSON getData found', E_USER_ERROR );
+			trigger_error( 'Missing JSON object in response', E_USER_ERROR );
+			return false;
 		}
 
 		$i += 1;
 		$data1 = substr( $this->output, 0, $i );
 		$data2 = substr( $this->output, $i );
 
-		$this->app['logger']->debug( 'json_decode: ' . $data1 );
+		$this->app['logger']->debug( 'json: ' . $data1 );
 		$this->app['logger']->debug( 'extra: ' . $data2 );
 
 		$json = json_decode( $data1 );
 		if ( null === $json ) {
-			trigger_error( 'Failed Decoding JSON object', E_USER_ERROR );
+			trigger_error( 'Failed decoding JSON object', E_USER_ERROR );
+			return false;
 		}
 
 		$all = array(
@@ -210,7 +220,7 @@ class Api
 	}
 
 	/**
-	 * Get query string in Filmweb API format
+	 * Build query string for Filmweb API
 	 *
 	 * @param string $method Filmweb API method
 	 * @return string Query string
@@ -243,7 +253,7 @@ class Api
 	}
 
 	/**
-	 * Get last API method used
+	 * Get signature of last API method used
 	 *
 	 * @return string API method
 	 */
@@ -275,27 +285,7 @@ class Api
 	}
 
 	/**
-	 * Get total sleep time between request call()'s
-	 *
-	 * @return float Total sleep time in fractional seconds
-	 */
-	public function getTotalSleep(): float
-	{
-		return $this->sleep_total / 1000000;
-	}
-
-	/**
-	 * Get total connection time
-	 *
-	 * @return float Total connection time in fractional seconds
-	 */
-	public function getTotalTime(): float
-	{
-		return $this->app['send']->getTotalTime();
-	}
-
-	/**
-	 * Get total calls counter
+	 * Get the total number of calls
 	 *
 	 * @return int Total calls
 	 */
@@ -305,7 +295,27 @@ class Api
 	}
 
 	/**
-	 * Get total data sent
+	 * Get the total sleep time between request calls
+	 *
+	 * @return float Total sleep time in fractional seconds
+	 */
+	public function getTotalSleep(): float
+	{
+		return $this->sleep_total / 1000000;
+	}
+
+	/**
+	 * Get the total connection time
+	 *
+	 * @return float Total connection time in fractional seconds
+	 */
+	public function getTotalTime(): float
+	{
+		return $this->app['send']->getTotalTime();
+	}
+
+	/**
+	 * Get the total data sent
 	 *
 	 * @return int Total data sent in bytes
 	 */
@@ -315,7 +325,7 @@ class Api
 	}
 
 	/**
-	 * Get total data recived from server
+	 * Get the total data recived from server
 	 *
 	 * @return int Total data recived in bytes
 	 */

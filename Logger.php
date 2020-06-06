@@ -82,6 +82,10 @@ class Logger
 	 */
 	private function backtrace()
 	{
+		if ( ! $this->app['cfg']['is_debug'] ) {
+			return '';
+		}
+
 		$level = 2; // backtrace history (before this class)
 
 		// https://www.php.net/manual/en/function.debug-backtrace.php
@@ -121,7 +125,7 @@ class Logger
 	 */
 	public function warning( string $message ): void
 	{
-		$this->logger->warning( $message );
+		$this->logger->warning( $this->backtrace() . $message );
 	}
 
 	/**
