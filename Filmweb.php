@@ -156,7 +156,7 @@ class Filmweb
 		// Handle errors included in error_reporting() only
 		if ( error_reporting() & $errno ) {
 			$is_filmweb = ( E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE ) & $errno;
-			$is_error = ( E_ERROR | E_USER_ERROR ) & $errno;
+			$is_error = ( E_ERROR | E_USER_ERROR | E_WARNING | E_USER_WARNING ) & $errno;
 			$msg = $is_filmweb ? 'Filmweb' : 'PHP';
 
 			switch ( $errno )
@@ -208,7 +208,7 @@ class Filmweb
 		}
 
 		// Don't execute PHP internal error handler
-		return false;
+		return true;
 	}
 
 	/**
