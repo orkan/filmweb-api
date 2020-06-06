@@ -14,6 +14,7 @@ class Api
 {
 	/**
 	 * Slowdown() statistics
+	 *
 	 * @see $this->slowdown()
 	 */
 	private $calls = 0; // Current call no.
@@ -143,15 +144,13 @@ class Api
 		$this->app['logger']->debug( 'Response: ' . json_encode( $this->response ) );
 
 		$r = explode( "\n", $this->response );
-
-		if ( count( $r ) < 2 ) {
-			trigger_error( 'Wrong response format', E_USER_ERROR );
-		}
-
 		$this->status = isset( $r[0] ) ? $r[0] : ''; // ok|err
 		$this->output = isset( $r[1] ) ? $r[1] : '';
 
-		$this->app['logger']->info( "status [{$this->status}]" );
+		if ( count( $r ) < 2 ) {
+			trigger_error( 'Wrong response format', E_USER_ERROR );
+			$this->status = 'err';
+		}
 
 		// Check response status
 		if ( 'ok' !== $this->status ) {
@@ -161,9 +160,11 @@ class Api
 		// Check response exception
 		if ( 'exc' === substr( $this->output, 0, 3 ) ) {
 			trigger_error( substr( $this->output, 4 ), E_USER_WARNING );
+			$this->status = 'exc';
 		}
 
-		return $this->getStatus();
+		$this->app['logger']->info( "status [{$this->status}]" );
+		return $this->status;
 	}
 
 	/**
@@ -186,6 +187,7 @@ class Api
 		$i = strrpos( $this->output, ']' );
 		if ( false === $i || '[' !== $this->output[0] ) {
 			trigger_error( 'Missing JSON object in response', E_USER_ERROR );
+			return false;
 		}
 
 		$i += 1;
@@ -198,6 +200,7 @@ class Api
 		$json = json_decode( $data1 );
 		if ( null === $json ) {
 			trigger_error( 'Failed decoding JSON object', E_USER_ERROR );
+			return false;
 		}
 
 		$all = array(
