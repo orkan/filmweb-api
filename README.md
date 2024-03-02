@@ -3,7 +3,7 @@
 # Filmweb.pl API 
 Non-official API for Filmweb.pl
 
-> Uwaga! Filmweb aktywnie działa na rzecz zablokowania nieautoryzowanego użycia tego API, wiec na chwilę obecną prezentowana tu metoda logowania już nie działa. Polecam [IMDb](https://www.imdb.com/)
+> Uwaga! Na chwilę obecną prezentowana tu metoda logowania już nie działa. W przygotowaniu jest nowa apka! Szukam beta testerów z >5000 zapisanych filmów na FW. Aktualnie dostępne są formaty json, txt i sqlite.
 
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg)](https://php.net/)
 [![Latest Stable Version](https://img.shields.io/packagist/v/orkan/filmweb-api.svg)](https://packagist.org/packages/orkan/filmweb-api)
